@@ -1,0 +1,67 @@
+---
+import JsonLd from "~/components/JsonLd.astro";
+import ArticleList from "~/features/blog/ArticleList.astro";
+import FeedLink from "~/features/feed/FeedLink.astro";
+import { feedTitle } from "~/features/feed/title";
+import SiteShell from "~/features/site/SiteShell.astro";
+import { blogLd, breadcrumbLd, jsonLdGraph, webPageLd } from "~/features/site/seo/structured-data";
+import Web from "~/layouts/Web.astro";
+import { CACHE_TTL, docCacheTags, SITE_WIDE_CACHE_TAGS } from "~/lib/cache";
+import { absoluteUrl, PUBLIC_SITE_URL } from "~/lib/env";
+import { SANITY_ARTICLE_CATEGORY_DOCUMENT_TYPE, SANITY_BLOG_INDEX_URI } from "~/sanity/constants";
+import type { BlogPageQResult } from "~/sanity/types";
+import { getDraftModeProps } from "../../sanity/lib/draft-mode";
+import { loadQuery } from "../../sanity/lib/load-query";
+import { BlogPageQ } from "../../sanity/queries";
+import { loadSite, seo } from "../../sanity/seo";
+
+// The index of the `/blog/<slug>` prefix route: a `blog` singleton, fetched by id.
+const [{ data: page }, { data: site }] = await Promise.all([
+  loadQuery<BlogPageQResult>({ query: BlogPageQ, ...getDraftModeProps(Astro) }),
+  loadSite(Astro),
+]);
+
+if (!page) {
+  return new Response(null, { status: 404 });
+}
+
+// Tagged with `article` and the category type; the cache keys on the full URL, so each filtered view is separate.
+Astro.cache.set({
+  ...CACHE_TTL,
+  tags: [...docCacheTags(page), "article", SANITY_ARTICLE_CATEGORY_DOCUMENT_TYPE, ...SITE_WIDE_CACHE_TAGS],
+});
+
+const canonical = absoluteUrl(SANITY_BLOG_INDEX_URI);
+const { title, description, image, robots } = page.seoMetadata ?? {};
+const seoProps = seo(site, {
+  robots,
+  title: title ?? page.title,
+  description,
+  image,
+  canonical,
+});
+
+const pageJsonLd = jsonLdGraph([
+  webPageLd({ name: seoProps.title, url: canonical, description: seoProps.description, siteUrl: PUBLIC_SITE_URL }),
+  blogLd({
+    name: page.heading ?? page.title ?? undefined,
+    url: canonical,
+    description: seoProps.description,
+    siteUrl: PUBLIC_SITE_URL,
+  }),
+  breadcrumbLd([
+    { name: "Home", url: absoluteUrl("/") },
+    { name: page.title ?? "", url: canonical },
+  ]),
+]);
+---
+
+<Web {...seoProps}>
+  <Fragment slot="head">
+    <FeedLink title={feedTitle(seoProps.siteName, page.title)} />
+  </Fragment>
+  <JsonLd data={pageJsonLd} />
+  <SiteShell showHeader={page.showHeader} showFooter={page.showFooter}>
+    <ArticleList canonical={canonical} />
+  </SiteShell>
+</Web>

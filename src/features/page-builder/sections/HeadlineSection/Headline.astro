@@ -1,0 +1,28 @@
+---
+import ReadingText from "~/components/ReadingText/ReadingText.astro";
+import SectionFrame from "~/features/page-builder/SectionFrame.astro";
+import type { SectionLayoutSettings } from "~/features/page-builder/section-layout";
+import { cx } from "~/features/style/utils";
+
+// Deliberately not sticky: the screen-tall box is scrolled straight through, and the read is the only thing the scroll does.
+type Props = {
+  headline?: string | null;
+  settings?: SectionLayoutSettings | null;
+  id?: string;
+  class?: string;
+  [key: `data-${string}`]: string | undefined;
+};
+
+const { headline, settings, id, class: className, ...data } = Astro.props;
+---
+
+<SectionFrame
+  settings={settings}
+  id={id}
+  class={cx('flex min-h-svh items-center justify-center py-80', className)}
+  {...data}
+>
+  <h2 class="max-w-[20ch] text-balance whitespace-pre-line text-center text-headline-20">
+    <ReadingText>{headline}</ReadingText>
+  </h2>
+</SectionFrame>

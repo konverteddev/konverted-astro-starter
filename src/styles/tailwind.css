@@ -1,0 +1,84 @@
+@import "tailwindcss";
+@import "./fonts.css";
+@import "./colors.css";
+@import "./typography.css";
+@import "./animations.css";
+@import "./global.css";
+@import "./sanity-rich-text.css";
+
+@theme {
+  /* Content width bounds (px); also reference values for responsive calc. */
+  --layout-min-w: 375;
+  --layout-max-w: 1600;
+
+  /* Reset default TW breakpoints. */
+  --breakpoint-\*: initial;
+
+  /* rem in media queries scales with the browser default font size, not :root, so a larger
+     default triggers mobile breakpoints sooner. */
+  --breakpoint-sm: 40rem;
+  --breakpoint-md: 48rem;
+  --breakpoint-lg: 64rem;
+  --breakpoint-xl: 80rem;
+  --breakpoint-2xl: 96rem;
+
+  /* One unit should match one pixel given that 1rem equals 16px. */
+  --spacing: 0.0625rem;
+
+  /* Reset default TW border-radius. */
+  --radius-\*: initial;
+
+  --radius-4: --spacing(4);
+  --radius-8: --spacing(8);
+  --radius-12: --spacing(12);
+  --radius-16: --spacing(16);
+  --radius-full: 9999px;
+}
+
+/* The shell's measurements: the header's height, plus the content column's width and side margin.
+   Kept together on `:root` rather than split into `@theme` so the three read as one definition and
+   share one consumption syntax, and because two of them change at `lg`, which a `:root` declaration
+   states directly. */
+@layer base {
+  :root {
+    /* The site header's full height, as `h-(--header-height)`. Page chrome that has to clear the
+       header measures it with `top-(--header-height)` or `scroll-mt-(--header-height)`. */
+    --header-height: --spacing(72);
+
+    @variant lg {
+      --header-height: --spacing(120);
+    }
+
+    /* The content column's width, as `max-w-(--page-width)`. Distinct from `--layout-max-w`, which
+       is only the upper bound the fluid type scales interpolate to. */
+    --page-width: --spacing(1200);
+
+    /* The page's side margin, as `px-(--page-gutter)`. Every page-level container reads it, so the
+       distance from the viewport to the content is one value rather than a pair per container. */
+    --page-gutter: --spacing(16);
+
+    @variant lg {
+      --page-gutter: --spacing(48);
+    }
+  }
+}
+
+/* Gate hover on true hover input, so touch taps never trigger it (cascades to group-hover/peer-hover). */
+@custom-variant hover {
+  @media (hover: hover) {
+    &:hover {
+      @slot;
+    }
+  }
+}
+
+/* Visually hide the native scrollbar. */
+@utility scrollbar-invisible {
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  scrollbar-color: transparent transparent;
+}

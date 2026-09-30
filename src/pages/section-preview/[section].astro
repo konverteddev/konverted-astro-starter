@@ -1,0 +1,42 @@
+---
+import { getSectionPreview, PREVIEW_HEIGHT, PREVIEW_WIDTH, resolvePreviewProps } from "~/features/page-builder/section-preview";
+import { SECTION_PREVIEW_ROBOTS } from "~/features/page-builder/section-preview-path";
+import Web from "~/layouts/Web.astro";
+
+// One section alone on a neutral page: what `scripts/section-thumbs/capture.ts` photographs for the
+// Studio's insert menu, and the fastest way to look at a single section. See docs/features/section-previews.md
+
+// An authoring surface, never a page of the site: it does not exist outside `astro dev`, so a
+// deployment has no route to find, crawl, or guess. The capture runs against the dev server.
+if (!import.meta.env.DEV) {
+  return new Response(null, { status: 404 });
+}
+
+const entry = getSectionPreview(Astro.params.section ?? "");
+
+if (!entry?.Component || entry.preview.skip) {
+  return new Response(null, { status: 404 });
+}
+
+const { Component, preview } = entry;
+const props = resolvePreviewProps(preview);
+const height = preview.height ?? PREVIEW_HEIGHT;
+
+// `safe` centring frames a short section without clipping the top off a tall one.
+---
+
+<Web title={`Section preview: ${entry.folder}`} robots={SECTION_PREVIEW_ROBOTS} bare>
+  <div
+    data-section-specimen
+    data-capture-width={String(PREVIEW_WIDTH)}
+    data-capture-height={String(height)}
+    style={`min-height:${height}px`}
+    class="flex w-full flex-col [justify-content:safe_center]"
+  >
+    <Component {...props} />
+  </div>
+</Web>
+
+<script>
+  import '~/features/page-builder/section-preview-ready'
+</script>

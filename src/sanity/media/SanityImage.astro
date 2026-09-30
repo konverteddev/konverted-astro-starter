@@ -1,0 +1,37 @@
+---
+import { hasImage } from "~/features/sanity/media/fragment";
+import { getImageDimensions, getImageSrc, getImageSrcSet } from "~/features/sanity/media/image/utils";
+import { responsiveSizes } from "~/lib/responsive-sizes";
+import type { MediaValue } from "./types";
+
+// `sizes` is a Tailwind-style shorthand (e.g. '100vw md:50vw'); see responsiveSizes.
+type Props = { media: MediaValue; width?: number; sizes?: string; priority?: boolean; class?: string };
+
+const { media, width, sizes, priority = false, class: className } = Astro.props;
+
+const image = media.image;
+const aspectRatio = media.aspectRatio ?? undefined;
+const builderOptions = { width, aspectRatio };
+const hasSource = hasImage(image);
+const dimensions = hasSource && image ? getImageDimensions(image, builderOptions) : null;
+
+const fallbackSizes = width ? undefined : "100vw";
+const resolvedSizes = sizes ? responsiveSizes(sizes) : fallbackSizes;
+---
+
+{
+  hasSource && image && (
+    <img
+      class={className}
+      loading={priority ? 'eager' : 'lazy'}
+      decoding={priority ? 'auto' : 'async'}
+      src={getImageSrc(image, builderOptions)}
+      srcset={getImageSrcSet(image, builderOptions) || undefined}
+      sizes={resolvedSizes}
+      alt={image.altText ?? ''}
+      width={dimensions?.width}
+      height={dimensions?.height}
+      fetchpriority={priority ? 'high' : undefined}
+    />
+  )
+}

@@ -1,0 +1,32 @@
+@theme {
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes fadeOut {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+
+  /* Half the track, which is exactly one copy of the content plus its trailing gap: the second copy
+     lands where the first started, so the loop has no seam. The duration here is only a default: a
+     marquee sets its own from its measured width, so its speed does not depend on its length. */
+  @keyframes marquee {
+    to {
+      transform: translate3d(-50%, 0, 0);
+    }
+  }
+
+  --animate-fade-in: fadeIn 400ms ease-in-out;
+  --animate-fade-out: fadeOut 400ms ease-in-out;
+  --animate-marquee: marquee 20s linear infinite;
+}

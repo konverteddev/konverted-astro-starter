@@ -1,0 +1,34 @@
+---
+import { cx } from "~/features/style/utils";
+import type { MediaValue } from "./types";
+
+type Props = { media: MediaValue; width?: number; priority?: boolean; class?: string };
+
+const { media, class: className } = Astro.props;
+
+const rive = media.rive;
+const options = media.riveOptions ?? {};
+const aspectRatio = media.aspectRatio ?? rive?.dimensions?.aspectRatio ?? undefined;
+---
+
+{
+  rive?.url && (
+    <rive-canvas
+      class={cx('block w-full', className)}
+      src={rive.url}
+      autoplay={(options.autoPlay ?? false) ? '' : undefined}
+      loop={(options.loop ?? false) ? '' : undefined}
+      data-state-machine={options.stateMachine || undefined}
+      data-auto-bind={options.autoBind ? '' : undefined}
+      style={aspectRatio ? { aspectRatio: String(aspectRatio) } : undefined}
+    >
+      <canvas class="size-full opacity-0 transition-opacity duration-200 ease-out motion-reduce:transition-none" />
+    </rive-canvas>
+  )
+}
+
+<script>
+  import { lazyCustomElement } from '~/lib/lazy-hydrate'
+
+  lazyCustomElement('rive-canvas', () => import('./RiveElement'))
+</script>

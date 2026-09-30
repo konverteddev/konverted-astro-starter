@@ -1,0 +1,94 @@
+/* The document scrolls itself, so the browser's own scroll restoration just works. */
+html,
+body {
+  @apply relative bg-black [scrollbar-color:gray_transparent];
+}
+
+/* Set on <html> while a page transition runs (see src/lib/transitions/page-transitions.ts). */
+html[data-vt-loading],
+html[data-vt-loading] * {
+  cursor: wait;
+}
+
+/* Set on <html> while an overlay owns the screen (see src/lib/scroll-lock.ts). The gutter holds the
+   space `scrollbar-color` above makes the scrollbar take, which hiding the overflow would otherwise
+   hand back to the page, everything fixed over it and the panel itself. */
+html[data-scroll-locked] {
+  overflow: hidden;
+  scrollbar-gutter: stable;
+}
+
+body {
+  @apply flex flex-col font-sans text-body-20 text-white antialiased;
+}
+
+main {
+  @apply flex-1 bg-black;
+}
+
+img {
+  @apply select-none;
+}
+
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-decoration,
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+}
+
+input[type="number"],
+input[type="search"] {
+  -moz-appearance: textfield;
+}
+
+@layer base {
+  /*
+   * Keyboard focus ring for interactive elements. :where() keeps specificity low
+   * so components can override with utilities when needed.
+   *
+   * Text fields are excluded from :focus-visible here: UAs often treat click
+   * focus as focus-visible for inputs. `html[data-keyboard-focus]` is set on
+   * Tab and cleared on pointer down (see the keyboard-focus script in Web.astro).
+   */
+  :where(
+    a[href],
+    button,
+    select,
+    summary,
+    [tabindex]:not([tabindex="-1"]),
+    [contenteditable="true"]:not([contenteditable="false"])
+  ):focus-visible {
+    @apply ring-2 ring-[#ff9100] outline-none;
+  }
+
+  html[data-keyboard-focus] :where(input:not([type="hidden"]), textarea):focus {
+    @apply ring-2 ring-[#ff9100] outline-none;
+  }
+
+  /* Alone: grouped with `::-moz-selection` the whole list is invalid outside Firefox, so the rule is dropped. */
+  ::selection {
+    @apply bg-white text-black;
+  }
+
+  /*
+   * Tailwind's preflight removes the pointer cursor from buttons. Restore it for
+   * interactive controls; disabled ones fall back to the default cursor.
+   */
+  :where(
+    a[href],
+    button,
+    label,
+    summary,
+    select,
+    [role="button"],
+    [role="tab"],
+    input[type="checkbox"],
+    input[type="radio"],
+    input[type="submit"],
+    input[type="button"],
+    input[type="reset"]
+  ):not(:disabled) {
+    @apply cursor-pointer;
+  }
+}

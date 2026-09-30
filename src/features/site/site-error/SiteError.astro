@@ -1,0 +1,34 @@
+---
+import Button from "~/components/Button.astro";
+import SanityLinkIcon from "~/features/sanity/link/SanityLinkIcon.astro";
+import SiteShell from "~/features/site/SiteShell.astro";
+import type { SiteErrorQResult } from "~/sanity/types";
+import { getDraftModeProps } from "../../../sanity/lib/draft-mode";
+import { loadQuery } from "../../../sanity/lib/load-query";
+import SanityRichText from "../../../sanity/rich-text/SanityRichText.astro";
+import { SiteErrorQ } from "./query";
+
+const { data: site } = await loadQuery<SiteErrorQResult>({ query: SiteErrorQ, ...getDraftModeProps(Astro) });
+
+const { text, link, showHeader, showFooter } = site?.notFound ?? {};
+---
+
+<SiteShell showHeader={showHeader ?? true} showFooter={showFooter ?? true}>
+  <div class="mx-auto flex w-full max-w-(--page-width) overflow-hidden bg-black px-(--page-gutter) py-64 text-white lg:py-96">
+    <div class="flex max-w-600 flex-col gap-32">
+      <SanityRichText animated viewport={false} value={text} />
+      {
+        link?.href && (
+          <Button
+            href={link.href}
+            target={link.openInNewTab ? '_blank' : undefined}
+            rel={link.openInNewTab ? 'noopener noreferrer' : undefined}
+          >
+            {link.text}
+            <SanityLinkIcon link={link} slot="right-icon" />
+          </Button>
+        )
+      }
+    </div>
+  </div>
+</SiteShell>

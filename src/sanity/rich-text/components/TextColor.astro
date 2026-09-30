@@ -1,0 +1,11 @@
+---
+import type { MarkProps } from "astro-portabletext/types";
+import { tokenColor } from "./token-color";
+
+type Props = MarkProps<{ color?: string | null }>;
+
+const { node } = Astro.props;
+const color = tokenColor(node.markDef?.color);
+---
+
+<span style={color ? { color } : undefined}><slot /></span>

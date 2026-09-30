@@ -1,0 +1,22 @@
+---
+import { type SectionLayoutSettings, sectionLayout } from "~/features/page-builder/section-layout";
+import { cx } from "~/features/style/utils";
+
+// The root every page builder section renders: capped to the content column, or full bleed when the
+// editor's settings say so. `as` names the section to a parser.
+type Props = {
+  /** A section is a `section`. One with no heading of its own is not part of the outline, so it stays generic. */
+  as?: "section" | "div" | "article" | "aside" | "figure" | "nav";
+  /** The section's own `sectionSettings` slice, straight from its query. */
+  settings?: SectionLayoutSettings | null;
+  id?: string;
+  class?: string;
+  [key: `data-${string}`]: string | undefined;
+};
+
+const { as: Tag = "section", settings, id, class: className, ...data } = Astro.props;
+---
+
+<Tag id={id} class={cx(sectionLayout(settings), className)} {...data}>
+  <slot />
+</Tag>

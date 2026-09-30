@@ -1,0 +1,30 @@
+---
+import { stegaClean } from "@sanity/client/stega";
+import { CtaSectionQ } from "~/features/page-builder/queries";
+import type { SectionProps } from "~/features/page-builder/types";
+import type { CtaSectionQResult } from "~/sanity/types";
+import { getDraftModeProps } from "../../../../sanity/lib/draft-mode";
+import { loadQuery } from "../../../../sanity/lib/load-query";
+import Cta from "./Cta.astro";
+
+type Props = SectionProps;
+
+const { docId, sectionKey } = Astro.props;
+
+const { data: section } = await loadQuery<CtaSectionQResult>({
+  query: CtaSectionQ,
+  params: { docId, sectionKey },
+  ...getDraftModeProps(Astro),
+});
+---
+
+{
+  section?.content && (
+    <Cta
+      {...section.content}
+      settings={section.settings}
+      id={stegaClean(section.settings?.hash) ?? undefined}
+      data-page-builder-section="ctaSection"
+    />
+  )
+}

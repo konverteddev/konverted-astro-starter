@@ -1,0 +1,12 @@
+---
+import { stegaClean } from "@sanity/client/stega";
+import { absoluteUrl } from "~/lib/env";
+import { FEED_MIME, FEED_PATH } from "./constants";
+
+/** Feed autodiscovery for the `head` slot: readers and browser extensions find the feed from any page carrying it. */
+type Props = { title: string };
+
+const { title } = Astro.props;
+---
+
+<link rel="alternate" type={FEED_MIME} title={stegaClean(title)} href={absoluteUrl(FEED_PATH)} />

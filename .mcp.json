@@ -1,0 +1,34 @@
+{
+  "mcpServers": {
+    "chrome-devtools": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "chrome-devtools-mcp@latest",
+        "--isolated",
+        "--viewport=1920x1080",
+        "--experimentalScreencast",
+        "--screenshotFormat=jpeg",
+        "--screenshotMaxWidth=1440",
+        "--no-usage-statistics"
+      ]
+    },
+    "firefox-devtools": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@mozilla/firefox-devtools-mcp@latest",
+        "--viewport",
+        "1920x1080",
+        "--tool-preset",
+        "developer",
+        "--start-url",
+        "about:blank"
+      ]
+    },
+    "Astro Docs": {
+      "type": "http",
+      "url": "https://mcp.docs.astro.build/mcp"
+    }
+  }
+}

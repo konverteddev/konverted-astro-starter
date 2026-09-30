@@ -1,0 +1,50 @@
+import { defineField, defineType } from "sanity";
+import { createPageBuilderField } from "../fields/create-page-builder";
+import { createSeoField } from "../fields/create-seo-field";
+import { createUriField } from "../fields/create-uri-field";
+
+export const {{camelCase documentType}} = defineType({
+  __experimental_formPreviewTitle: false,
+  name: "{{camelCase documentType}}",
+  type: "document",
+  title: "{{titleCase documentType}}",
+  icon: () => <>📄</>,
+  groups: [
+    { name: "page", title: "Page", icon: () => <>📄</>, default: true },
+    { name: "content", title: "Content", icon: () => <>🍱</> },
+    { name: "seo", title: "SEO", icon: () => <>🔍</> },
+  ],
+  fields: [
+    defineField({
+      group: "page",
+      name: "title",
+      type: "string",
+      title: "Title",
+      validation: (R) => R.required(),
+    }),
+    createUriField({
+      group: "page",
+      source: "title",
+      slugify: ({ slug }) => `/{{kebabCase routePrefix}}/${slug}`,
+      validation: (R) => R.required(),
+    }),
+    createPageBuilderField({
+      group: "content",
+    }),
+    createSeoField({
+      group: "seo",
+    }),
+  ],
+  preview: {
+    select: {
+      title: "title",
+      uri: "uri.current",
+    },
+    prepare({ title, uri }) {
+      return {
+        title: title ?? "No title",
+        subtitle: uri ?? "No URI",
+      };
+    },
+  },
+});

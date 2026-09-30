@@ -1,0 +1,22 @@
+---
+import type { ListItemProps } from "astro-portabletext/types";
+import { getIndentStyle } from "./indent-style";
+
+type Props = ListItemProps;
+
+const { node, index } = Astro.props;
+const indentStyle = getIndentStyle(node.markDefs);
+---
+
+<li class="flex items-start gap-8">
+  {
+    node.listItem === "number" ? (
+      <span class="list-inside list-decimal text-white/40 tabular-nums">{index + 1}.</span>
+    ) : (
+      <span class="list-inside list-disc text-white/40">•</span>
+    )
+  }
+  <div class="min-w-0 flex-1" data-text style={indentStyle}>
+    <slot />
+  </div>
+</li>

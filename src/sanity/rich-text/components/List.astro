@@ -1,0 +1,22 @@
+---
+import type { ListProps } from "astro-portabletext/types";
+
+// Lists render `list-none` with hand-drawn markers (see ListItem) so marker color and spacing
+// stay under this repo's control rather than the browser's.
+type Props = ListProps;
+
+const { node } = Astro.props;
+const listClass = "flex list-none flex-col gap-8 text-white/75";
+---
+
+{
+  node.listItem === "number" ? (
+    <ol class={listClass}>
+      <slot />
+    </ol>
+  ) : (
+    <ul class={listClass}>
+      <slot />
+    </ul>
+  )
+}

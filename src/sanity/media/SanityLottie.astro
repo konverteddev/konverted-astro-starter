@@ -1,0 +1,30 @@
+---
+import { cx } from "~/features/style/utils";
+import type { MediaValue } from "./types";
+
+type Props = { media: MediaValue; width?: number; priority?: boolean; class?: string };
+
+const { media, class: className } = Astro.props;
+
+const lottie = media.lottie;
+const options = media.lottieOptions ?? {};
+const aspectRatio = media.aspectRatio ?? lottie?.dimensions?.aspectRatio ?? undefined;
+---
+
+{
+  lottie?.url && (
+    <dotlottie-wc
+      class={cx('block w-full', className)}
+      src={lottie.url}
+      autoplay={(options.autoPlay ?? false) ? '' : undefined}
+      loop={(options.loop ?? false) ? '' : undefined}
+      style={aspectRatio ? { aspectRatio: String(aspectRatio) } : undefined}
+    />
+  )
+}
+
+<script>
+  import { lazyCustomElement } from '~/lib/lazy-hydrate'
+
+  lazyCustomElement('dotlottie-wc', () => import('@lottiefiles/dotlottie-wc'))
+</script>

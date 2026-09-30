@@ -1,0 +1,20 @@
+---
+import Dialog from "~/components/Dialog/Dialog.astro";
+import { AUTHOR_DIALOG_TITLE_ID } from "./constants";
+
+// Ships empty; the profile is fetched as a partial on first ask (see `AuthorDialogElement`).
+type Props = {
+  /** The page the panel opens over, so a navigation back to it is recognised as closing rather than leaving. */
+  hostPath: string;
+};
+
+const { hostPath } = Astro.props;
+---
+
+<author-dialog data-host-path={hostPath} class="contents">
+  <Dialog placement="side" labelledBy={AUTHOR_DIALOG_TITLE_ID} closeLabel="Close author" />
+</author-dialog>
+
+<script>
+  import '~/features/blog/author/AuthorDialogElement'
+</script>

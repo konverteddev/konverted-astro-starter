@@ -1,0 +1,42 @@
+---
+import type { ComponentProps } from "astro/types";
+import Button from "~/components/Button.astro";
+import SectionFrame from "~/features/page-builder/SectionFrame.astro";
+import type { SectionLayoutSettings } from "~/features/page-builder/section-layout";
+import type { LinkFragmentResult } from "~/features/sanity/link/fragment";
+import SanityLinkIcon from "~/features/sanity/link/SanityLinkIcon.astro";
+import SanityRichText from "../../../../sanity/rich-text/SanityRichText.astro";
+
+// A panel the page sets a call to action on: heading, supporting copy, one button.
+type Props = {
+  headline?: string | null;
+  text?: ComponentProps<typeof SanityRichText>["value"];
+  cta?: LinkFragmentResult | null;
+  settings?: SectionLayoutSettings | null;
+  id?: string;
+  class?: string;
+  [key: `data-${string}`]: string | undefined;
+};
+
+const { headline, text, cta, settings, id, class: className, ...data } = Astro.props;
+---
+
+<SectionFrame settings={settings} id={id} class={className} {...data}>
+  <div class="flex flex-col items-start gap-24 rounded-8 border border-white/10 bg-white/5 p-24 lg:p-40">
+    {headline && <h2 class="text-headline-10 text-balance whitespace-pre-line">{headline}</h2>}
+    <SanityRichText animated value={text} class="text-body-10" />
+    {
+      cta?.href && (
+        <Button
+          href={cta.href}
+          target={cta.openInNewTab ? '_blank' : undefined}
+          rel={cta.openInNewTab ? 'noopener noreferrer' : undefined}
+          download={cta.canDownload ? '' : undefined}
+        >
+          {cta.text}
+          <SanityLinkIcon link={cta} slot="right-icon" />
+        </Button>
+      )
+    }
+  </div>
+</SectionFrame>

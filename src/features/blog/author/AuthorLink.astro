@@ -1,0 +1,21 @@
+---
+import { stegaClean } from "@sanity/client/stega";
+
+// The byline: a plain link to the author's page until `AuthorDialogElement` answers the click with a panel instead.
+type Props = { name?: string | null; href?: string | null; class?: string };
+
+const { name, href, class: className } = Astro.props;
+
+// `href` is stega-encoded in preview; clean it so the link target stays a real path.
+const target = stegaClean(href);
+---
+
+{
+  name && target ? (
+    <a href={target} data-author-link class={className}>
+      {name}
+    </a>
+  ) : (
+    name
+  )
+}

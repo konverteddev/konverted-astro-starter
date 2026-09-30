@@ -1,0 +1,14 @@
+export const {{pascalCase documentType}}PageQ = defineQuery(`${SeoFunctions}
+
+  *[_type == "{{camelCase documentType}}" && defined(uri.current) && uri.current == $uri][0]{
+    _id,
+    _type,
+    title,
+    "uri": coalesce(uri.current, "/{{kebabCase routePrefix}}"),
+    "showHeader": coalesce(showHeader, true),
+    "showFooter": coalesce(showFooter, true),
+    seoMetadata{${SeoMetadataFragment}},
+  }
+`)
+
+// PLOP: Add Route Query

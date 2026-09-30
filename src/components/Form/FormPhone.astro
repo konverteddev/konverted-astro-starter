@@ -1,0 +1,77 @@
+---
+import Icon from "~/components/Icon/Icon.astro";
+import { cx } from "~/features/style/utils";
+import { DEFAULT_DIAL_CODE, DIAL_CODES } from "./dial-codes";
+import type { FormOption } from "./FormDropdown.astro";
+import FormField from "./FormField.astro";
+import { fieldLabel } from "./label";
+import { FIELD_CONTROL_CLASS } from "./styles";
+
+// A phone number split into a dial code and the number itself, submitted as two fields so a consumer
+// never has to unpick one string. The label follows the number, not the code, which always has a value.
+type Props = {
+  name: string;
+  label: string;
+  countries?: FormOption[];
+  id?: string;
+  value?: string;
+  dialCode?: string;
+  dialCodeName?: string;
+  placeholder?: string;
+  error?: string;
+  required?: boolean;
+  disabled?: boolean;
+  class?: string;
+};
+
+const {
+  name,
+  label,
+  countries = DIAL_CODES,
+  id = name,
+  value,
+  dialCode = DEFAULT_DIAL_CODE,
+  dialCodeName = `${name}DialCode`,
+  placeholder,
+  error,
+  required,
+  disabled,
+  class: className,
+} = Astro.props;
+
+const dialClass = "text-white/60 group-data-filled:text-white";
+---
+
+<FormField name={name} label={label} id={id} error={error} required={required} filled={Boolean(value)} class={className}>
+  <span class="relative flex shrink-0 items-center">
+    <select
+      id={`${id}-dial-code`}
+      name={dialCodeName}
+      disabled={disabled}
+      aria-label={`${label} dial code`}
+      class={cx(FIELD_CONTROL_CLASS, 'w-auto flex-none appearance-none pr-24', dialClass)}
+    >
+      {countries.map((country) => <option value={country.value} selected={country.value === dialCode}>{country.label}</option>)}
+    </select>
+
+    <Icon name="chevron-down" class={cx('pointer-events-none absolute right-0 size-16', dialClass)} />
+  </span>
+
+  <span aria-hidden="true" class="w-px shrink-0 self-stretch bg-white/20"></span>
+
+  <input
+    id={id}
+    name={name}
+    type="tel"
+    inputmode="tel"
+    value={value}
+    placeholder={placeholder ?? fieldLabel(label, required)}
+    required={required}
+    disabled={disabled}
+    autocomplete="tel-national"
+    aria-describedby={`${id}-error`}
+    aria-invalid={error ? 'true' : undefined}
+    data-field-control
+    class={FIELD_CONTROL_CLASS}
+  />
+</FormField>

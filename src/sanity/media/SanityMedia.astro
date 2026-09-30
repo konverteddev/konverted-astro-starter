@@ -1,0 +1,37 @@
+---
+import SanityImage from "./SanityImage.astro";
+import SanityLottie from "./SanityLottie.astro";
+import SanityMuxVideo from "./SanityMuxVideo.astro";
+import SanityNativeVideo from "./SanityNativeVideo.astro";
+import SanityRive from "./SanityRive.astro";
+import type { MediaType, MediaValue, VideoProps } from "./types";
+
+// Flat props are only what every renderer shares; renderer-specific props live in their own bag.
+// `sizes` is a Tailwind-style breakpoint shorthand, e.g. '100vw md:50vw' (see responsiveSizes).
+type ImageProps = { sizes?: string };
+type Props = {
+  media?: MediaValue | null;
+  width?: number;
+  priority?: boolean;
+  class?: string;
+  imageProps?: ImageProps;
+  videoProps?: VideoProps;
+};
+
+const { media, width, priority = false, class: className, imageProps, videoProps } = Astro.props;
+
+// `satisfies` fails the build until every media kind has a renderer here.
+const renderers = {
+  image: SanityImage,
+  videoMux: SanityMuxVideo,
+  videoFile: SanityNativeVideo,
+  videoUrl: SanityNativeVideo,
+  lottie: SanityLottie,
+  rive: SanityRive,
+} satisfies Record<MediaType, unknown>;
+
+const Renderer = media?.type ? renderers[media.type] : null;
+const rendererProps = media?.type === "image" ? imageProps : { videoProps };
+---
+
+{Renderer && <Renderer media={media!} width={width} priority={priority} class={className} {...rendererProps} />}

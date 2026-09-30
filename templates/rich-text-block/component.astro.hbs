@@ -1,0 +1,12 @@
+---
+import type { Props as PortableTextNodeProps } from 'astro-portabletext/types'
+import type { {{pascalCase name}}FragmentResult } from '~/features/rich-text/blocks/{{kebabCase name}}/fragment'
+
+type Props = PortableTextNodeProps<{ _type: '{{camelCase name}}' } & {{pascalCase name}}FragmentResult>
+
+const { node } = Astro.props
+---
+
+<div data-rich-text-block='{{camelCase name}}' class='bg-[green] py-64'>
+  <code>{JSON.stringify(node)}</code>
+</div>

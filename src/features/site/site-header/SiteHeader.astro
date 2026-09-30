@@ -1,0 +1,27 @@
+---
+import SiteNavLink from "~/features/site/SiteNavLink.astro";
+import type { SiteHeaderQResult } from "~/sanity/types";
+import { getDraftModeProps } from "../../../sanity/lib/draft-mode";
+import { loadQuery } from "../../../sanity/lib/load-query";
+import { SiteHeaderQ } from "./query";
+
+const { data: siteHeader } = await loadQuery<SiteHeaderQResult>({ query: SiteHeaderQ, ...getDraftModeProps(Astro) });
+
+const links = siteHeader?.header?.links ?? [];
+---
+
+{
+  links.length > 0 && (
+    <header class="flex h-(--header-height) shrink-0 items-center">
+      <nav class="mx-auto w-full max-w-(--page-width) px-(--page-gutter)">
+        <ul class="flex gap-24">
+          {links.map((link, i) => (
+            <li>
+              <SiteNavLink link={link} animationDelay={i * 0.1} />
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </header>
+  )
+}

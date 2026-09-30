@@ -1,0 +1,52 @@
+---
+import SanityLink from "~/features/sanity/link/SanityLink.astro";
+import { hasImage } from "~/features/sanity/media/fragment";
+import type { AuthorPageQResult } from "~/sanity/types";
+import SanityImage from "../../../sanity/media/SanityImage.astro";
+import SanityRichText from "../../../sanity/rich-text/SanityRichText.astro";
+import { PORTRAIT_ASPECT_RATIO } from "./constants";
+
+// One author, as both the panel and their own page render them; only the wrapper and the heading level differ.
+type Props = {
+  author: NonNullable<AuthorPageQResult>;
+  /** `h1` on the author's own page; `h2` in the panel, where the article underneath already owns the h1. */
+  as?: "h1" | "h2";
+  headingId?: string;
+  sizes?: string;
+};
+
+const { author, as: Heading = "h2", headingId, sizes = "100vw md:280px" } = Astro.props;
+
+const links = (author.links ?? []).filter((link) => Boolean(link.href));
+---
+
+<div class="flex flex-col gap-24">
+  {
+    hasImage(author.image) && (
+      <SanityImage
+        media={{ image: author.image, aspectRatio: PORTRAIT_ASPECT_RATIO }}
+        sizes={sizes}
+        class="w-full max-w-280 rounded-12 object-cover"
+      />
+    )
+  }
+
+  <div class="flex flex-col gap-8">
+    <Heading id={headingId} class="text-balance text-headline-10">{author.name}</Heading>
+    {author.role && <p class="text-body-10 opacity-60">{author.role}</p>}
+  </div>
+
+  <SanityRichText value={author.bio} class="text-body-10" />
+
+  {
+    links.length > 0 && (
+      <ul class="flex flex-wrap gap-x-24 gap-y-8">
+        {links.map((link) => (
+          <li>
+            <SanityLink link={link} class="text-body-10 underline underline-offset-4 opacity-60 hover:opacity-100" />
+          </li>
+        ))}
+      </ul>
+    )
+  }
+</div>

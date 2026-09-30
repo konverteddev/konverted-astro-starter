@@ -1,0 +1,34 @@
+---
+import { stegaClean } from "@sanity/client/stega";
+import { MediaSectionQ } from "~/features/page-builder/queries";
+import type { SectionProps } from "~/features/page-builder/types";
+import type { MediaSectionQResult } from "~/sanity/types";
+import { getDraftModeProps } from "../../../../sanity/lib/draft-mode";
+import { loadQuery } from "../../../../sanity/lib/load-query";
+import Media from "./Media.astro";
+
+type Props = SectionProps;
+
+const { docId, sectionKey, isFirst = false } = Astro.props;
+
+const { data: section } = await loadQuery<MediaSectionQResult>({
+  query: MediaSectionQ,
+  params: { docId, sectionKey },
+  ...getDraftModeProps(Astro),
+});
+
+// The first section is the LCP candidate, but only images want the hint: on a video it would flip preload to auto and pull the whole file.
+const priority = isFirst && section?.content?.media?.type === "image";
+---
+
+{
+  section?.content && (
+    <Media
+      {...section.content}
+      priority={priority}
+      settings={section.settings}
+      id={stegaClean(section.settings?.hash) ?? undefined}
+      data-page-builder-section="mediaSection"
+    />
+  )
+}

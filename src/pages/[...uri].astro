@@ -1,0 +1,66 @@
+---
+import JsonLd from "~/components/JsonLd.astro";
+import LegalPage from "~/features/legal/LegalPage.astro";
+import PageSections from "~/features/page-builder/PageSections.astro";
+import { PageSectionsQ } from "~/features/page-builder/queries";
+import SiteShell from "~/features/site/SiteShell.astro";
+import { breadcrumbLd, jsonLdGraph, webPageLd } from "~/features/site/seo/structured-data";
+import Web from "~/layouts/Web.astro";
+import { CACHE_TTL, docCacheTags, SITE_WIDE_CACHE_TAGS } from "~/lib/cache";
+import { absoluteUrl, PUBLIC_SITE_URL } from "~/lib/env";
+import type { PageQResult, PageSectionsQResult } from "~/sanity/types";
+import { getDraftModeProps } from "../sanity/lib/draft-mode";
+import { loadQuery } from "../sanity/lib/load-query";
+import { PageQ } from "../sanity/queries";
+import { loadSite, seo } from "../sanity/seo";
+
+// The pages model: every `page` and `legalPage` document with a `uri` renders here, including the
+// homepage ("/"). Rendered on demand so the Presentation tool's draft cookie applies.
+const uri = Astro.params.uri ? `/${Astro.params.uri}` : "/";
+
+const draftModeProps = getDraftModeProps(Astro);
+
+// All three read the same uri and none depends on the others, so they cost one round trip together.
+const [{ data: page }, { data: pageSections }, { data: site }] = await Promise.all([
+  loadQuery<PageQResult>({ query: PageQ, params: { uri }, ...draftModeProps }),
+  loadQuery<PageSectionsQResult>({ query: PageSectionsQ, params: { uri }, ...draftModeProps }),
+  loadSite(Astro),
+]);
+
+if (!page) {
+  return new Response(null, { status: 404 });
+}
+
+// Tagged with the page's identity plus 'site', so publishing the Site singleton busts every page.
+Astro.cache.set({ ...CACHE_TTL, tags: [...docCacheTags(page), ...SITE_WIDE_CACHE_TAGS] });
+
+const canonical = absoluteUrl(uri);
+const { title, description, image, robots } = page.seoMetadata ?? {};
+const seoProps = seo(site, {
+  robots,
+  title: uri === "/" ? undefined : (title ?? page.title),
+  description: uri === "/" ? undefined : description,
+  image: uri === "/" ? undefined : image,
+  canonical,
+});
+
+// Name/description mirror the resolution in `seoProps` so the node matches the <title>. JsonLd stega-cleans the graph.
+const pageJsonLd = jsonLdGraph([
+  webPageLd({ name: seoProps.title, url: canonical, description: seoProps.description, siteUrl: PUBLIC_SITE_URL }),
+  ...(uri === "/"
+    ? []
+    : [
+        breadcrumbLd([
+          { name: "Home", url: absoluteUrl("/") },
+          { name: page.title ?? "", url: canonical },
+        ]),
+      ]),
+]);
+---
+
+<Web {...seoProps}>
+  <JsonLd data={pageJsonLd} />
+  <SiteShell showHeader={page.showHeader} showFooter={page.showFooter}>
+    {page._type === 'legalPage' ? <LegalPage page={page} /> : <PageSections docId={page._id} pageSections={pageSections} />}
+  </SiteShell>
+</Web>

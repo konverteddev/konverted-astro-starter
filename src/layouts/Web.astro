@@ -1,0 +1,180 @@
+---
+import { ClientRouter } from "astro:transitions";
+import geistSansUrl from "@fontsource-variable/geist/files/geist-latin-wght-normal.woff2?url";
+import geistMonoUrl from "@fontsource-variable/geist-mono/files/geist-mono-latin-wght-normal.woff2?url";
+import JsonLd from "~/components/JsonLd.astro";
+import Lenis from "~/components/Lenis/Lenis.astro";
+import { FAVICON_MIME, FAVICON_ROUTE_PATH } from "~/features/site/seo/favicon";
+import { jsonLdGraph, organizationLd, webSiteLd } from "~/features/site/seo/structured-data";
+import { PUBLIC_UMAMI_WEBSITE_ID } from "~/lib/env";
+import { VisualEditing } from "../sanity/components/VisualEditing";
+import { isDraftMode } from "../sanity/lib/draft-mode";
+import "~/styles/tailwind.css";
+
+export type Props = {
+  title: string;
+  siteName?: string;
+  socialProfiles?: string[];
+  siteDescription?: string;
+  siteLogo?: string;
+  description?: string;
+  canonical?: string;
+  ogTitle?: string;
+  robots?: string;
+  noindex?: boolean;
+  viewport?: string;
+  image?: string;
+  imageAlt?: string;
+  imageWidth?: number;
+  imageHeight?: number;
+  faviconLight?: string;
+  faviconDark?: string;
+  /** Drops the page's own scroll driver, for an internal page that is a specimen rather than a reader's page. */
+  bare?: boolean;
+};
+
+const {
+  title,
+  siteName,
+  socialProfiles = [],
+  siteDescription,
+  siteLogo,
+  description,
+  canonical,
+  ogTitle = title,
+  robots = "max-image-preview:large",
+  noindex = false,
+  viewport = "width=device-width, initial-scale=1",
+  image,
+  imageAlt = ogTitle,
+  imageWidth,
+  imageHeight,
+  faviconLight,
+  faviconDark,
+  bare = false,
+} = Astro.props;
+const robotsContent = noindex ? "noindex, follow" : robots;
+
+const site = Astro.site!;
+
+/** Public hostnames only, so preview visits neither send events nor log gateway 400s; null on localhost. */
+const umamiApex = site.hostname.replace(/^www\./, "");
+const umamiDomains = umamiApex === "localhost" || umamiApex === "127.0.0.1" ? null : `${umamiApex},www.${umamiApex}`;
+
+// An absent Site Name means the singleton is unpublished, so emit nothing rather than invent a brand.
+const siteJsonLd = siteName
+  ? jsonLdGraph([
+      organizationLd({ name: siteName, url: site.origin, logo: siteLogo, sameAs: socialProfiles }),
+      webSiteLd({ name: siteName, url: site.origin, description: siteDescription }),
+    ])
+  : null;
+
+const isDraft = isDraftMode(Astro);
+---
+
+<!doctype html>
+<html lang="en" transition:name="root" transition:animate="none" data-draft-mode={isDraft ? "" : undefined}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content={viewport} />
+    <meta http-equiv="x-ua-compatible" content="ie=edge,chrome=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="google" content="notranslate" />
+    <meta name="robots" content={robotsContent} />
+
+    <title>{title}</title>
+    {description && <meta name="description" content={description} />}
+    {canonical && <link rel="canonical" href={canonical} />}
+
+    <link rel="preconnect" href="https://cdn.sanity.io" />
+
+    <link rel="preload" href={geistSansUrl} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={geistMonoUrl} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/geist-pixel/GeistPixel-Square.woff2" as="font" type="font/woff2" crossorigin />
+
+    {(faviconLight || faviconDark) && <link rel="icon" href={FAVICON_ROUTE_PATH} />}
+    {faviconLight && <link rel="icon" type={FAVICON_MIME} href={faviconLight} media="(prefers-color-scheme: light)" />}
+    {faviconDark && <link rel="icon" type={FAVICON_MIME} href={faviconDark} media="(prefers-color-scheme: dark)" />}
+    <link rel="sitemap" href="/sitemap.xml" />
+
+    {siteName && <meta property="og:site_name" content={siteName} />}
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={ogTitle} />
+    {description && <meta property="og:description" content={description} />}
+    {canonical && <meta property="og:url" content={canonical} />}
+    {
+      image && (
+        <Fragment>
+          <meta property="og:image" content={image} />
+          {imageWidth && <meta property="og:image:width" content={String(imageWidth)} />}
+          {imageHeight && <meta property="og:image:height" content={String(imageHeight)} />}
+          <meta property="og:image:alt" content={imageAlt} />
+        </Fragment>
+      )
+    }
+    <meta name="twitter:card" content={image ? 'summary_large_image' : 'summary'} />
+    <meta name="twitter:title" content={ogTitle} />
+    {description && <meta name="twitter:description" content={description} />}
+    {image && <meta name="twitter:image" content={image} />}
+
+    <slot name="head" />
+
+    <ClientRouter />
+
+    {
+      PUBLIC_UMAMI_WEBSITE_ID && umamiDomains && (
+        <script
+          is:inline
+          defer
+          src="https://cloud.umami.is/script.js"
+          data-website-id={PUBLIC_UMAMI_WEBSITE_ID}
+          data-domains={umamiDomains}
+        ></script>
+      )
+    }
+  </head>
+  <body>
+    {siteJsonLd && <JsonLd data={siteJsonLd} />}
+    {!isDraft && !bare && <Lenis />}
+    <slot />
+    {
+      isDraft && (
+        <Fragment>
+          <VisualEditing client:only="react" />
+          <a
+            id="tca-exit-preview"
+            data-astro-reload
+            href={`/api/draft-mode/disable?redirectTo=${encodeURIComponent(Astro.url.pathname)}`}
+            style="position:fixed;bottom:1rem;right:1rem;z-index:2147483647;padding:.5rem 1rem;border-radius:9999px;background:#101112;color:#fff;font:500 .8125rem/1 system-ui,sans-serif;text-decoration:none;box-shadow:0 1px 4px rgba(0,0,0,.3)"
+          >
+            Exit preview
+          </a>
+          <script is:inline>
+            if (window.self !== window.top) document.getElementById('tca-exit-preview')?.remove()
+          </script>
+        </Fragment>
+      )
+    }
+
+    <script>
+      import '~/lib/transitions/page-transitions'
+      import '~/lib/transitions/scroll-restoration'
+
+      console.log(
+        '%c Designed & Engineered by https://www.edoardolunardi.dev/ ',
+        'border:1px solid #999;padding:6px 10px;border-radius:4px;font-size:12px;',
+      )
+
+      // Keyboard focus mode: html[data-keyboard-focus] gates the input focus ring (see global.css).
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Tab') {
+          document.documentElement.setAttribute('data-keyboard-focus', '')
+        }
+      })
+      document.addEventListener('pointerdown', () => {
+        document.documentElement.removeAttribute('data-keyboard-focus')
+      })
+    </script>
+  </body>
+</html>

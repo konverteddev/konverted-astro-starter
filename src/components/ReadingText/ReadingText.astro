@@ -1,0 +1,38 @@
+---
+import { cx } from "~/features/style/utils";
+
+// A statement read word by word on the scroll. It drives itself, or a parent takes it over with `driven`
+// and sets `progress`. The read is inline style, so there is no stylesheet to carry with it.
+type Props = {
+  /** `div` for a block of its own, `span` for a phrase that shares its line with another host. */
+  as?: "span" | "div";
+  /** The parent owns the scroll: no ScrollTrigger of its own, it waits to be given `progress`. */
+  driven?: boolean;
+  /** Selector for the text blocks to split inside the host; the wrapper itself when unset. */
+  splitSelector?: string;
+  class?: string;
+};
+
+const { as = "div", driven, splitSelector, class: className } = Astro.props;
+
+const Inner = as === "div" ? "div" : "span";
+
+// The dim end, the sweep the words are spread across, and how long one word takes to light.
+const TUNING = "--reading-unread: 0.3; --reading-span: 0.85; --reading-fade: 0.12";
+
+// The unsplit fallback, declared once here and read off the markup by the element.
+const RAMP = "opacity: calc(var(--reading-unread) + (1 - var(--reading-unread)) * var(--reading-progress, 0))";
+---
+
+<reading-text
+  class={cx(as === 'div' ? 'block w-full' : 'inline-block', className)}
+  style={TUNING}
+  data-driven={driven ? '' : undefined}
+  data-split-selector={splitSelector}
+>
+  <Inner data-reading-text class={as === 'div' ? 'block' : 'inline-block'} style={RAMP}><slot /></Inner>
+</reading-text>
+
+<script>
+  import './ReadingTextElement'
+</script>

@@ -1,0 +1,28 @@
+---
+import type { Props as PortableTextNodeProps } from "astro-portabletext/types";
+import InnerParallax from "~/components/InnerParallax/InnerParallax.astro";
+import SanityMedia from "../../media/SanityMedia.astro";
+import type { MediaValue } from "../../media/types";
+
+type Props = PortableTextNodeProps<{
+  _type: "mediaBlock";
+  media?: MediaValue;
+  caption?: string | null;
+  useParallax?: boolean | null;
+}>;
+
+const { node } = Astro.props;
+---
+
+<figure class="flex flex-col gap-16" data-rich-text-block="mediaBlock">
+  {
+    node.useParallax ? (
+      <InnerParallax overflow="60 lg:120" style={{ aspectRatio: node.media?.aspectRatio ?? undefined }}>
+        <SanityMedia media={node.media} class="size-full object-cover" />
+      </InnerParallax>
+    ) : (
+      <SanityMedia media={node.media} />
+    )
+  }
+  {node.caption && <figcaption class="font-pixel-square text-caption whitespace-pre-line text-white/50">{node.caption}</figcaption>}
+</figure>

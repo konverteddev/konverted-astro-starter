@@ -1,0 +1,48 @@
+---
+import Icon from "~/components/Icon/Icon.astro";
+import { cx } from "~/features/style/utils";
+import FormField from "./FormField.astro";
+import { FIELD_ADORNMENT_CLASS, FIELD_CONTROL_CLASS } from "./styles";
+
+// A native date input. Its label floats from the start: the browser paints its own date mask when the
+// field is empty, so a label waiting for a value would never get its turn.
+type Props = {
+  name: string;
+  label: string;
+  id?: string;
+  value?: string;
+  min?: string;
+  max?: string;
+  error?: string;
+  required?: boolean;
+  disabled?: boolean;
+  class?: string;
+};
+
+const { name, label, id = name, value, min, max, error, required, disabled, class: className } = Astro.props;
+
+// The native picker button is stretched over the drawn icon and hidden, so no script has to reach for `showPicker`.
+const PICKER_CLASS =
+  "[&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-16 " +
+  "[&::-webkit-calendar-picker-indicator]:size-16 [&::-webkit-calendar-picker-indicator]:cursor-pointer " +
+  "[&::-webkit-calendar-picker-indicator]:opacity-0";
+---
+
+<FormField name={name} label={label} id={id} error={error} required={required} filled={Boolean(value)} floating class={className}>
+  <input
+    id={id}
+    name={name}
+    type="date"
+    value={value}
+    min={min}
+    max={max}
+    required={required}
+    disabled={disabled}
+    aria-describedby={`${id}-error`}
+    aria-invalid={error ? 'true' : undefined}
+    data-field-control
+    class={cx(FIELD_CONTROL_CLASS, 'absolute inset-0 h-full rounded-4 px-16 pr-40', PICKER_CLASS)}
+  />
+
+  <Icon name="calendar" class={FIELD_ADORNMENT_CLASS} />
+</FormField>

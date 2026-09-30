@@ -1,0 +1,40 @@
+---
+import { cx } from "~/features/style/utils";
+import { createResponsiveOverflow } from "./utils";
+
+// Wraps its slotted media in a clipping window whose content scroll-parallaxes. `overflow` is the slack
+// on each edge as a responsive shorthand (e.g. "60 lg:120", px). GSAP loads lazily near view.
+type Props = {
+  overflow?: string | number;
+  direction?: "x" | "y";
+  class?: string;
+  style?: astroHTML.JSX.CSSProperties;
+};
+
+const { overflow = "60 lg:120", direction = "y", class: className, style } = Astro.props;
+
+const { styles: overflowStyles, classes: overflowClasses } = createResponsiveOverflow(overflow);
+
+// Oversized and pulled back by one overflow, so the pre-scroll position is centred with no flash.
+const innerStyle: astroHTML.JSX.CSSProperties =
+  direction === "x"
+    ? { width: "calc(100% + (2 * var(--parallax-overflow)))", left: "calc(-1 * var(--parallax-overflow))" }
+    : { height: "calc(100% + (2 * var(--parallax-overflow)))", top: "calc(-1 * var(--parallax-overflow))" };
+---
+
+<inner-parallax
+  class={cx("relative block overflow-hidden", overflowClasses, className)}
+  data-direction={direction}
+  style={{ ...overflowStyles, ...style }}
+>
+  <div data-parallax-inner class="absolute inset-0" style={innerStyle}>
+    <slot />
+  </div>
+</inner-parallax>
+
+<script>
+  import { lazyCustomElement } from "~/lib/lazy-hydrate";
+
+  // GSAP is heavy; hold it out of the initial load until a parallax nears the viewport.
+  lazyCustomElement("inner-parallax", () => import("./InnerParallaxElement"));
+</script>

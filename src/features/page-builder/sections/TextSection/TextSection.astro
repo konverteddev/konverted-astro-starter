@@ -1,0 +1,30 @@
+---
+import { stegaClean } from "@sanity/client/stega";
+import { TextSectionQ } from "~/features/page-builder/queries";
+import type { SectionProps } from "~/features/page-builder/types";
+import type { TextSectionQResult } from "~/sanity/types";
+import { getDraftModeProps } from "../../../../sanity/lib/draft-mode";
+import { loadQuery } from "../../../../sanity/lib/load-query";
+import Text from "./Text.astro";
+
+type Props = SectionProps;
+
+const { docId, sectionKey } = Astro.props;
+
+const { data: section } = await loadQuery<TextSectionQResult>({
+  query: TextSectionQ,
+  params: { docId, sectionKey },
+  ...getDraftModeProps(Astro),
+});
+---
+
+{
+  section?.content && (
+    <Text
+      {...section.content}
+      settings={section.settings}
+      id={stegaClean(section.settings?.hash) ?? undefined}
+      data-page-builder-section="textSection"
+    />
+  )
+}

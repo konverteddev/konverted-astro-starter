@@ -1,0 +1,69 @@
+---
+import { PortableText as BasePortableText } from "astro-portabletext";
+import type { PortableTextProps, SomePortableTextComponents } from "astro-portabletext/types";
+import AnimatedText from "~/components/AnimatedText/AnimatedText.astro";
+import { cx } from "~/features/style/utils";
+import Block from "./components/Block.astro";
+import HighlightColor from "./components/HighlightColor.astro";
+import Indent from "./components/Indent.astro";
+import InlineMedia from "./components/InlineMedia.astro";
+import Link from "./components/Link.astro";
+import List from "./components/List.astro";
+import ListItem from "./components/ListItem.astro";
+import MediaBlock from "./components/MediaBlock.astro";
+import Sup from "./components/Sup.astro";
+import TextColor from "./components/TextColor.astro";
+import Underline from "./components/Underline.astro";
+
+// PLOP: Add Block Import
+
+type Props = {
+  value?: PortableTextProps["value"] | null;
+  class?: string;
+  /** Line-split intro: renders the rich text through AnimatedText. */
+  animated?: boolean;
+  animationDelay?: number;
+  /** Passed through to AnimatedText; `false` skips viewport gating. */
+  viewport?: false | { margin?: string };
+};
+
+const { value, class: className, animated = false, animationDelay, viewport } = Astro.props;
+
+const components: SomePortableTextComponents = {
+  block: Block,
+  list: List,
+  listItem: ListItem,
+  mark: {
+    linkField: Link,
+    textColorField: TextColor,
+    highlightColorField: HighlightColor,
+    indentField: Indent,
+    sup: Sup,
+    underline: Underline,
+  },
+  type: {
+    mediaBlock: MediaBlock,
+    inlineMediaField: InlineMedia,
+    // PLOP: Add Block Render
+  },
+};
+---
+
+{
+  value &&
+    (animated ? (
+      <AnimatedText
+        as="div"
+        splitSelector="[data-text]"
+        animationDelay={animationDelay}
+        viewport={viewport}
+        class={cx('sanity-rich-text flex flex-col gap-[1em]', className)}
+      >
+        <BasePortableText value={value} components={components} onMissingComponent={false} />
+      </AnimatedText>
+    ) : (
+      <div class={cx('sanity-rich-text', className)}>
+        <BasePortableText value={value} components={components} onMissingComponent={false} />
+      </div>
+    ))
+}

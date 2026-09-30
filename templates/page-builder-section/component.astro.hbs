@@ -1,0 +1,35 @@
+---
+import { stegaClean } from '@sanity/client/stega'
+import { getDraftModeProps } from '../../../sanity/lib/draft-mode'
+import { loadQuery } from '../../../sanity/lib/load-query'
+import type { {{pascalCase name}}QResult } from '~/sanity/types'
+import { {{pascalCase name}}Q } from '~/features/page-builder/queries'
+import SectionFrame from '~/features/page-builder/SectionFrame.astro'
+import { SECTION_SETTINGS } from '~/features/page-builder/section-layout'
+import type { SectionProps } from '~/features/page-builder/types'
+
+type Props = SectionProps
+
+const { docId, sectionKey } = Astro.props
+
+const { data: section } = await loadQuery<{{pascalCase name}}QResult>({
+  query: {{pascalCase name}}Q,
+  params: { docId, sectionKey },
+  ...getDraftModeProps(Astro),
+})
+---
+
+{/* `as` is a document-outline decision: keep `section` while this carries its own heading,
+    drop to `div` or `figure` when it does not. `settings` applies the editor's layout switches. */}
+{
+  section?.content && (
+    <SectionFrame
+      settings={section.settings}
+      id={stegaClean(section.settings?.hash) ?? undefined}
+      data-page-builder-section="{{camelCase name}}"
+      class="bg-[red] py-64"
+    >
+      <code>{JSON.stringify(section.content)}</code>
+    </SectionFrame>
+  )
+}

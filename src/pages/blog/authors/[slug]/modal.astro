@@ -1,0 +1,33 @@
+---
+import AuthorProfile from "~/features/blog/author/AuthorProfile.astro";
+import { AUTHOR_DIALOG_TITLE_ID } from "~/features/blog/author/constants";
+import { CACHE_TTL, docCacheTags, SITE_WIDE_CACHE_TAGS } from "~/lib/cache";
+import { SANITY_AUTHOR_PATH_PREFIX } from "~/sanity/constants";
+import type { AuthorPageQResult } from "~/sanity/types";
+import { getDraftModeProps } from "../../../../sanity/lib/draft-mode";
+import { loadQuery } from "../../../../sanity/lib/load-query";
+import { AuthorPageQ } from "../../../../sanity/queries";
+
+// One author as an HTML fragment, which is all the panel needs: the profile the page at
+// /blog/authors/<name> renders, without the document around it.
+export const partial = true;
+
+const uri = `${SANITY_AUTHOR_PATH_PREFIX}/${Astro.params.slug}`;
+
+const { data: author } = await loadQuery<AuthorPageQResult>({
+  query: AuthorPageQ,
+  params: { uri },
+  ...getDraftModeProps(Astro),
+});
+
+if (!author) {
+  return new Response(null, { status: 404 });
+}
+
+Astro.cache.set({ ...CACHE_TTL, tags: [...docCacheTags(author), ...SITE_WIDE_CACHE_TAGS] });
+
+// A fragment of a page that is already indexed under its own URL; this one is not a page at all.
+Astro.response.headers.set("X-Robots-Tag", "noindex");
+---
+
+<AuthorProfile author={author} headingId={AUTHOR_DIALOG_TITLE_ID} sizes="100vw md:280px" />

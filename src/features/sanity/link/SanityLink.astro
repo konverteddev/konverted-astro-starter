@@ -1,0 +1,25 @@
+---
+import type { LinkFragmentResult } from "./fragment";
+
+// Anchor for a resolved `LinkFragment`. Slot content wins; falls back to the CMS link text.
+type Props = { link?: LinkFragmentResult | null; class?: string; "aria-current"?: "page" };
+
+const { link, class: className, "aria-current": ariaCurrent } = Astro.props;
+---
+
+{
+  link?.href ? (
+    <a
+      href={link.href}
+      class={className}
+      aria-current={ariaCurrent}
+      target={link.openInNewTab ? '_blank' : undefined}
+      rel={link.openInNewTab ? 'noopener noreferrer' : undefined}
+      download={link.canDownload ? '' : undefined}
+    >
+      <slot>{link.text}</slot>
+    </a>
+  ) : (
+    <slot />
+  )
+}

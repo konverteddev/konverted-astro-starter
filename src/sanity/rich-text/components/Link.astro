@@ -1,0 +1,27 @@
+---
+import type { MarkProps } from "astro-portabletext/types";
+
+type Props = MarkProps<{ href?: string | null; openInNewTab?: boolean | null; canDownload?: boolean | null }>;
+
+const { node } = Astro.props;
+const { href, openInNewTab, canDownload } = node.markDef ?? {};
+
+// text-decoration, not `border-b`: AnimatedText's line masks clip at the line box, which is shorter than
+// the inline box, so a bottom border lands on the clip edge and is cut away.
+---
+
+{
+  href ? (
+    <a
+      href={href}
+      target={openInNewTab ? '_blank' : undefined}
+      rel={openInNewTab ? 'noopener noreferrer' : undefined}
+      download={canDownload ? '' : undefined}
+      class="underline decoration-white/40 decoration-dashed decoration-1 underline-offset-3 transition-colors duration-160 ease-out hover:decoration-white"
+    >
+      <slot />
+    </a>
+  ) : (
+    <slot />
+  )
+}

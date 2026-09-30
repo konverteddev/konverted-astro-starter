@@ -1,0 +1,9 @@
+export const {{pascalCase name}}Q =
+  defineQuery(`*[_id == $docId][0].pageBuilder.sectionsArray[_type == "{{camelCase name}}Field" && _key == $sectionKey][0]{
+    "content": sectionContent{
+      ...
+    },
+    ${SECTION_SETTINGS},
+}`)
+
+// PLOP: Add Section Query

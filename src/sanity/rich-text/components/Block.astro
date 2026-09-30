@@ -1,0 +1,36 @@
+---
+import type { BlockProps } from "astro-portabletext/types";
+import { getIndentStyle } from "./indent-style";
+
+// Block renderer for rich text: every text block carries `data-text` (the AnimatedText split
+// target) and the indentField mark applies at block level.
+type Props = BlockProps;
+
+const { node } = Astro.props;
+const style = node.style ?? "normal";
+const indentStyle = getIndentStyle(node.markDefs);
+---
+
+{
+  style === "h2" ? (
+    <h2 class="mt-24 text-headline-10 text-balance first:mt-0" data-text style={indentStyle}>
+      <slot />
+    </h2>
+  ) : style === "h3" ? (
+    <h3 class="mt-12 text-body-20 text-balance first:mt-0" data-text style={indentStyle}>
+      <slot />
+    </h3>
+  ) : style === "h4" ? (
+    <h3 class="font-pixel-square text-caption tracking-wider text-white/50 uppercase" data-text style={indentStyle}>
+      <slot />
+    </h3>
+  ) : style === "caption" ? (
+    <div class="font-pixel-square text-caption text-white/50 empty:hidden" data-text style={indentStyle}>
+      <slot />
+    </div>
+  ) : (
+    <div class="text-white/75 empty:hidden" data-text style={indentStyle}>
+      <slot />
+    </div>
+  )
+}

@@ -1,0 +1,55 @@
+---
+import { buildPosterUrl } from "~/features/mux/utils";
+import { getImageSrc } from "~/features/sanity/media/image/utils";
+import { type MediaValue, resolveVideoOptions, type VideoProps } from "./types";
+
+type Props = { media: MediaValue; width?: number; priority?: boolean; class?: string; videoProps?: VideoProps };
+
+const { media, priority = false, class: className, videoProps } = Astro.props;
+
+const video = media.video;
+const options = resolveVideoOptions(media, videoProps);
+const aspectRatio = media.aspectRatio ?? video?.dimensions?.aspectRatio ?? undefined;
+
+// Poster: an explicit CMS cover image wins; otherwise a Mux thumbnail (animated when enabled).
+const poster = video?.playbackId
+  ? media.videoCover?._id
+    ? getImageSrc(media.videoCover, { width: 960, aspectRatio })
+    : buildPosterUrl({
+        playbackId: video.playbackId,
+        time: video.thumbTime ?? 1,
+        width: 960,
+        animated: media.animatedThumbnail?.enabled
+          ? { start: media.animatedThumbnail.start ?? undefined, end: media.animatedThumbnail.end ?? undefined }
+          : undefined,
+      })
+  : undefined;
+---
+
+{
+  video?.playbackId && (
+    <mux-player
+      class={className}
+      playback-id={video.playbackId}
+      stream-type="on-demand"
+      poster={poster}
+      preload={priority ? 'auto' : 'metadata'}
+      autoplay={options.autoPlay ? 'muted' : undefined}
+      muted={options.muted ? '' : undefined}
+      loop={options.loop ? '' : undefined}
+      playsinline
+      style={{
+        aspectRatio: aspectRatio ? String(aspectRatio) : undefined,
+        // mux-player has no `controls` attribute; the CSS var hides the whole control bar.
+        ...(options.noControls ? { '--controls': 'none' } : {}),
+      }}
+    />
+  )
+}
+
+<script>
+  import { lazyCustomElement } from '~/lib/lazy-hydrate'
+
+  // Mux player is heavy; load it only when a player nears the viewport.
+  lazyCustomElement('mux-player', () => import('@mux/mux-player'))
+</script>

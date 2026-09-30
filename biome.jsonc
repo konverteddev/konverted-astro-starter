@@ -1,0 +1,285 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true,
+    "defaultBranch": "main"
+  },
+  "files": {
+    "ignoreUnknown": true,
+    "includes": [
+      "**/*.{ts,js,mjs,tsx,jsx,astro,css,json,jsonc,md,mdx,gql,graphql}",
+      "!**/sanity/types.ts",
+      "!**/public",
+      "!**/node_modules",
+      "!**/dist",
+      "!.astro",
+      "!**/templates"
+    ]
+  },
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  },
+  "linter": {
+    "enabled": true,
+    // React rules for the Studio's .tsx files (also auto-detected from the react dependency).
+    "domains": {
+      "react": "recommended"
+    },
+    "rules": {
+      "security": {
+        // Allow dangerouslySetInnerHTML for necessary dynamic content.
+        "noDangerouslySetInnerHtml": "warn"
+      },
+      "a11y": {
+        // SVGs should have titles for accessibility, similar to alt text on images.
+        "noSvgWithoutTitle": "warn",
+        // Disabled for decorative videos that don't require captions.
+        "useMediaCaption": "off"
+      },
+      "complexity": {
+        // Allow forEach for better readability in simple iterations.
+        "noForEach": "off"
+      },
+      "correctness": {
+        // Enforce exhaustive dependencies despite occasional false positives.
+        "useExhaustiveDependencies": "warn",
+        // Remove all unused variables and imports.
+        "noUnusedImports": "error",
+        "noUnusedVariables": "error",
+        "noUndeclaredVariables": "error"
+      },
+      "style": {
+        // Use `as const` assertions for improved readability.
+        "useAsConstAssertion": "error",
+        // Enforce braces for `if`/`else` and other control statements.
+        "useBlockStatements": "error",
+        // Require self-closing elements for consistency.
+        "useSelfClosingElements": "error",
+        // Prevent comma-separated variable declarations for clarity.
+        // Example: avoid `let foo = 0, bar, baz;`
+        "useSingleVarDeclarator": "error",
+        // Enforce Number namespace methods for clarity.
+        // Example: use `Number.parseInt()` instead of `parseInt()`.
+        "useNumberNamespace": "error",
+        // Less type annotations improve readability.
+        "noInferrableTypes": "error",
+        // Reassigning parameters is usually not a good idea.
+        "noParameterAssign": "error",
+        // Default parameters come last for better function signatures.
+        "useDefaultParameterLast": "error",
+        // Early returns reduce nesting.
+        "noUselessElse": "error",
+        "noRestrictedImports": {
+          "level": "error",
+          "options": {
+            "paths": {
+              // Class merging goes through the shared seam (custom text-scale aware).
+              "tailwind-merge": "Use `cx` from `~/features/style/utils` instead.",
+              // Clients go through the centralized seam (src/sanity/lib/client.ts holds the biome-ignore).
+              "sanity:client": "Import `sanityClient` / `sanityEditClient` from `src/sanity/lib/client` instead.",
+              // The smooth-scroll driver stays behind its element and is not mounted in draft mode.
+              "lenis": "Listen to native scroll instead: Lenis drives the real scroller, so window scroll listeners work with or without it (and it is not mounted in draft mode). Only src/components/Lenis imports lenis; lock scrolling via the lenis-scroll element's stop()/start().",
+              // Enforce the recommended import pattern for React (namespace).
+              "react": {
+                "allowImportNames": ["*"],
+                "message": "Use 'import * as React from \"react\"' instead of named or default imports."
+              }
+            },
+            "patterns": [
+              {
+                "group": ["lenis/**"],
+                "message": "Listen to native scroll instead: Lenis drives the real scroller, so window scroll listeners work with or without it (and it is not mounted in draft mode). Only src/components/Lenis imports lenis."
+              }
+            ]
+          }
+        }
+      },
+      "suspicious": {
+        // Allow array index as key for simple, static lists.
+        "noArrayIndexKey": "warn",
+        // Raised from its default warning: every cookie write goes through `~/lib/cookies`, which
+        // carries the single suppression. A direct assignment anywhere else is the mistake this
+        // catches, and the Cookie Store API it suggests cannot replace the helper (see that file).
+        "noDocumentCookie": "error",
+        // Tailwind uses custom at rules.
+        "noUnknownAtRules": "off",
+        // Duplicated CSS properties are okay. Also, this causes false-positives
+        // when CSS properties are re-declared in a different media query scope.
+        "noDuplicateCustomProperties": "off"
+      },
+      "nursery": {
+        // Automatically sort Tailwind CSS classes for consistency.
+        "useSortedClasses": {
+          "level": "error",
+          "fix": "safe",
+          "options": {
+            "attributes": ["className", "class"],
+            "functions": ["cx"]
+          }
+        }
+      },
+      "performance": {
+        // Dev UX outweighs the performance cost in most cases.
+        "noAccumulatingSpread": "off",
+        "noImgElement": "off"
+      }
+    }
+  },
+  "formatter": {
+    "enabled": true,
+    "lineWidth": 130,
+    "indentWidth": 2,
+    "indentStyle": "space"
+  },
+  "javascript": {
+    // Baked into the bundle by `vite.define` in astro.config.mjs, so it has no declaration Biome
+    // can follow. Typed for TypeScript in src/env.d.ts.
+    "globals": ["__ROUTE_CACHE_BUILD_ID__"],
+    "formatter": {
+      "arrowParentheses": "always",
+      "jsxQuoteStyle": "double",
+      "quoteStyle": "double",
+      "semicolons": "always",
+      "trailingCommas": "es5"
+    }
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
+  },
+  "overrides": [
+    {
+      // Biome only sees the frontmatter of .astro files, so variables consumed by the template
+      // (and the Astro global) look unused/undeclared to it.
+      "includes": ["**/*.astro"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "noUnusedImports": "off",
+            "noUnusedVariables": "off",
+            "noUndeclaredVariables": "off"
+          },
+          "style": {
+            "useConst": "off",
+            "useImportType": "off"
+          }
+        }
+      }
+    },
+    {
+      // The root `sanity/` folder ships as a standalone module
+      // (see docs/sanity/standalone-folder.md), so it must not import via the `~/` alias.
+      // Mirror the base noRestrictedImports rule and add a ban on any `~/` import.
+      // Use relative paths (./, ../) between `sanity/` modules instead.
+      "includes": ["sanity/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "paths": {
+                  "tailwind-merge": "Use `cx` from `~/features/style/utils` instead.",
+                  "sanity:client": "Import `sanityClient` / `sanityEditClient` from `src/sanity/lib/client` instead.",
+                  "lenis": "Listen to native scroll instead: Lenis drives the real scroller, so window scroll listeners work with or without it (and it is not mounted in draft mode). Only src/components/Lenis imports lenis; lock scrolling via the lenis-scroll element's stop()/start().",
+                  "react": {
+                    "allowImportNames": ["*"],
+                    "message": "Use 'import * as React from \"react\"' instead of named or default imports."
+                  }
+                },
+                "patterns": [
+                  {
+                    "group": ["~/**"],
+                    "message": "Inside sanity/, import other sanity modules with relative paths (./, ../) so the folder stays portable. The ~/ alias is fine elsewhere in the repo. See docs/sanity/standalone-folder.md."
+                  },
+                  {
+                    "group": ["lenis/**"],
+                    "message": "Listen to native scroll instead: Lenis drives the real scroller, so window scroll listeners work with or without it (and it is not mounted in draft mode). Only src/components/Lenis imports lenis."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      // Imports reach across folders with the `~/` alias, never `../`. Relative paths are only
+      // for same-folder siblings and for imports that stay inside a `sanity/` folder, which
+      // ships portable. `src/sanity/` is excluded for that reason, and `scripts/` is outside
+      // the alias entirely. Mirror the base noRestrictedImports rule and add the `../` ban.
+      "includes": ["src/**", "!src/sanity/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "paths": {
+                  // Class merging goes through the shared seam (custom text-scale aware).
+                  "tailwind-merge": "Use `cx` from `~/features/style/utils` instead.",
+                  // Clients go through the centralized seam (src/sanity/lib/client.ts holds the biome-ignore).
+                  "sanity:client": "Import `sanityClient` / `sanityEditClient` from `src/sanity/lib/client` instead.",
+                  // The smooth-scroll driver stays behind its element and is not mounted in draft mode.
+                  "lenis": "Listen to native scroll instead: Lenis drives the real scroller, so window scroll listeners work with or without it (and it is not mounted in draft mode). Only src/components/Lenis imports lenis; lock scrolling via the lenis-scroll element's stop()/start().",
+                  // Enforce the recommended import pattern for React (namespace).
+                  "react": {
+                    "allowImportNames": ["*"],
+                    "message": "Use 'import * as React from \"react\"' instead of named or default imports."
+                  }
+                },
+                "patterns": [
+                  {
+                    "group": ["../**", "!../**/sanity", "!../**/sanity/**"],
+                    "message": "Import across folders with the `~/` alias (e.g. `~/lib/utils`), not `../`. Relative paths are only for same-folder siblings and for imports that stay inside a `sanity/` folder."
+                  },
+                  {
+                    "group": ["lenis/**"],
+                    "message": "Listen to native scroll instead: Lenis drives the real scroller, so window scroll listeners work with or without it (and it is not mounted in draft mode). Only src/components/Lenis imports lenis."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      // The one folder that owns the Lenis instance (see the custom-elements skill). Mirror the
+      // src/** rule above without the lenis ban; the `../` ban still applies.
+      "includes": ["src/components/Lenis/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "paths": {
+                  "tailwind-merge": "Use `cx` from `~/features/style/utils` instead.",
+                  "sanity:client": "Import `sanityClient` / `sanityEditClient` from `src/sanity/lib/client` instead.",
+                  "react": {
+                    "allowImportNames": ["*"],
+                    "message": "Use 'import * as React from \"react\"' instead of named or default imports."
+                  }
+                },
+                "patterns": [
+                  {
+                    "group": ["../**", "!../**/sanity", "!../**/sanity/**"],
+                    "message": "Import across folders with the `~/` alias (e.g. `~/lib/utils`), not `../`. Relative paths are only for same-folder siblings and for imports that stay inside a `sanity/` folder."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

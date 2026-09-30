@@ -1,0 +1,144 @@
+---
+import { stegaClean } from "@sanity/client/stega";
+import FilterBar, { type FilterOption } from "~/components/FilterBar.astro";
+import Icon from "~/components/Icon/Icon.astro";
+import JsonLd from "~/components/JsonLd.astro";
+import { FEED_MIME, FEED_PATH } from "~/features/feed/constants";
+import { itemListLd, jsonLdGraph } from "~/features/site/seo/structured-data";
+import { SANITY_BLOG_INDEX_URI } from "~/sanity/constants";
+import type { BlogArticleListQResult } from "~/sanity/types";
+import { getDraftModeProps } from "../../sanity/lib/draft-mode";
+import { loadQuery } from "../../sanity/lib/load-query";
+import SanityRichText from "../../sanity/rich-text/SanityRichText.astro";
+import { CATEGORY_PARAM, selectedCategories, toggleCategoryHref } from "./category-filter";
+import { formatDate } from "./format-date";
+import { BlogArticleListQ } from "./queries";
+
+/** The index's own canonical, which every filtered view shares; the route owns it and hands it down. */
+type Props = { canonical: string };
+
+const { canonical } = Astro.props;
+
+// The filter is resolved here, before the query runs, so the list arrives already filtered. Reading
+// the URL in the component rather than the route keeps the route as thin as it was.
+//
+// The known-slug list the URL is validated against comes back from the same query. Fetching it first
+// would mean two round trips, so the query takes the raw params and the pass below narrows what it
+// returns; an unknown slug therefore reaches GROQ, matches nothing, and the empty state explains it.
+const requestedCategories = [
+  ...new Set(
+    Astro.url.searchParams
+      .getAll(CATEGORY_PARAM)
+      .map((value) => value.trim())
+      .filter(Boolean)
+  ),
+];
+
+const { data: blog } = await loadQuery<BlogArticleListQResult>({
+  query: BlogArticleListQ,
+  params: { categories: requestedCategories },
+  ...getDraftModeProps(Astro),
+});
+
+const articles = blog?.articles ?? [];
+const categories = blog?.categories ?? [];
+
+const knownSlugs = categories.map((category) => stegaClean(category.slug) ?? "").filter(Boolean);
+const selected = selectedCategories(Astro.url.searchParams, knownSlugs);
+
+const filterOptions: FilterOption[] = categories.map((category) => {
+  const slug = stegaClean(category.slug) ?? "";
+
+  return {
+    key: category.key,
+    label: category.name ?? slug,
+    href: toggleCategoryHref(Astro.url.pathname, selected, slug),
+    isActive: selected.includes(slug),
+  };
+});
+
+const isFiltered = selected.length > 0 || requestedCategories.length > 0;
+
+// Written server-side, which already knows the count and filters; the client only moves it into the live region.
+const activeNames = filterOptions.filter((option) => option.isActive).map((option) => stegaClean(option.label) ?? "");
+const results = `${articles.length} ${articles.length === 1 ? "article" : "articles"}`;
+const resultSummary = activeNames.length
+  ? `${results} matching ${new Intl.ListFormat("en", { type: "conjunction" }).format(activeNames)}`
+  : results;
+
+// Describes the list as rendered, so a filtered view never claims items a visitor cannot see.
+const listJsonLd = jsonLdGraph([
+  itemListLd({
+    pageId: `${canonical}#webpage`,
+    id: `${canonical}#articles`,
+    name: stegaClean(blog?.heading) ?? undefined,
+    items: articles.flatMap((article) => {
+      const href = stegaClean(article.href);
+
+      return href ? [{ url: new URL(href, canonical).href, name: stegaClean(article.title) ?? undefined }] : [];
+    }),
+  }),
+]);
+
+function metaLine(article: (typeof articles)[number]): string {
+  return [article.publishedAt ? formatDate(stegaClean(article.publishedAt)) : null, article.author, ...(article.categories ?? [])]
+    .filter(Boolean)
+    .join(" · ");
+}
+---
+
+{
+  blog && (
+    <div
+      data-page-builder-section="blog"
+      class="mx-auto flex w-full max-w-(--page-width) flex-col gap-48 px-(--page-gutter) py-64 lg:gap-64 lg:py-96"
+    >
+      <div class="flex flex-col gap-24">
+        {blog.heading && <h1 class="text-headline-10 text-balance">{blog.heading}</h1>}
+        <SanityRichText animated value={blog.intro} class="text-body-10" />
+        <a
+          href={FEED_PATH}
+          type={FEED_MIME}
+          data-astro-reload
+          class="inline-flex w-fit items-center gap-8 text-body-10 underline underline-offset-4 opacity-60 transition-opacity duration-200 ease-out hover:opacity-100 motion-reduce:transition-none"
+        >
+          <Icon name="rss" />
+          RSS
+        </a>
+      </div>
+
+      <p data-page-in-place-announcer role="status" class="sr-only" />
+
+      <div data-page-in-place-scope data-page-in-place-status={resultSummary} class="flex flex-col gap-32">
+        <FilterBar label="Filter by category" options={filterOptions} />
+
+        {articles.length ? (
+          <Fragment>
+            <JsonLd data={listJsonLd} />
+            <ul data-flip-list class="flex flex-col gap-24">
+              {articles.map((article) => (
+                <li data-flip-key={stegaClean(article.href) ?? article._id}>
+                  <a
+                    href={stegaClean(article.href) ?? SANITY_BLOG_INDEX_URI}
+                    class="group flex flex-col gap-8 border-white/10 border-t pt-24"
+                  >
+                    <h2 class="text-body-10 text-balance transition-opacity group-hover:opacity-70">{article.title}</h2>
+                    {metaLine(article) && <p class="text-body-10 opacity-60">{metaLine(article)}</p>}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </Fragment>
+        ) : (
+          <p class="text-body-10 opacity-60">
+            {isFiltered ? 'No articles match the selected categories.' : 'No articles published yet.'}
+          </p>
+        )}
+      </div>
+    </div>
+  )
+}
+
+<script>
+  import '~/lib/transitions/list-flip'
+</script>

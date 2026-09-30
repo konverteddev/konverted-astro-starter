@@ -1,0 +1,33 @@
+---
+import { cx } from "~/features/style/utils";
+
+// A small bordered label: article categories today, any other short tag later. `selected` is the
+// filled state a filter uses to say it is on; static chips never set it.
+type Props = {
+  /** Prefer this over slotted children; the slot is there for markup a string cannot carry. */
+  label?: string | null;
+  selected?: boolean;
+  /** `true` adds the hover treatment a chip inside a link or button wants. */
+  interactive?: boolean;
+  class?: string;
+};
+
+const { label, selected = false, interactive = false, class: className } = Astro.props;
+
+const base =
+  "inline-flex w-fit items-center rounded-full border px-12 py-4 text-caption transition-colors duration-200 ease-out motion-reduce:transition-none";
+
+const states = {
+  selected: "border-white bg-white text-black",
+  default: "border-white/20 text-white",
+};
+
+const classes = cx(
+  base,
+  states[selected ? "selected" : "default"],
+  interactive && !selected && "hover:border-white/50",
+  className
+);
+---
+
+<span class={classes}>{label ?? <slot />}</span>

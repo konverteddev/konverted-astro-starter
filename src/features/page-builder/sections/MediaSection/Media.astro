@@ -1,0 +1,34 @@
+---
+import InnerParallax from "~/components/InnerParallax/InnerParallax.astro";
+import SectionFrame from "~/features/page-builder/SectionFrame.astro";
+import type { SectionLayoutSettings } from "~/features/page-builder/section-layout";
+import type { MediaFragmentResult } from "~/features/sanity/media/fragment";
+import SanityMedia from "../../../../sanity/media/SanityMedia.astro";
+
+// A full-width media block with an optional caption, optionally drifting against the scroll.
+type Props = {
+  media?: MediaFragmentResult | null;
+  caption?: string | null;
+  useParallax?: boolean | null;
+  priority?: boolean;
+  settings?: SectionLayoutSettings | null;
+  id?: string;
+  class?: string;
+  [key: `data-${string}`]: string | undefined;
+};
+
+const { media, caption, useParallax, priority = false, settings, id, class: className, ...data } = Astro.props;
+---
+
+<SectionFrame as="figure" settings={settings} id={id} class={className} {...data}>
+  {
+    useParallax ? (
+      <InnerParallax overflow="60 lg:120" style={{ aspectRatio: media?.aspectRatio ?? undefined }}>
+        <SanityMedia media={media} priority={priority} class="size-full object-cover" />
+      </InnerParallax>
+    ) : (
+      <SanityMedia media={media} priority={priority} class="w-full" />
+    )
+  }
+  {caption && <figcaption class="mt-12 font-pixel-square text-caption whitespace-pre-line text-white/50">{caption}</figcaption>}
+</SectionFrame>

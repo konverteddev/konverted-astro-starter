@@ -1,0 +1,70 @@
+@theme {
+  /*
+   * Geist faces are declared in fonts.css, which sets the `--font-geist-*` vars.
+   * Each `--font-pixel-*` becomes `font-pixel-square`, `font-pixel-line`, etc.
+   */
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-pixel-square: var(--font-geist-pixel-square), ui-monospace, monospace;
+  --font-pixel-grid: var(--font-geist-pixel-grid), ui-monospace, monospace;
+  --font-pixel-circle: var(--font-geist-pixel-circle), ui-monospace, monospace;
+  --font-pixel-triangle: var(--font-geist-pixel-triangle), ui-monospace, monospace;
+  --font-pixel-line: var(--font-geist-pixel-line), ui-monospace, monospace;
+
+  /* Reset default TW font sizes. */
+  --text-\*: initial;
+
+  /*
+    By default, this will clamp the fluid font size between
+    its maximum and minimum values. This approach works well when the site design
+    has a defined max-width. For fully fluid designs, consider removing
+    the clamping from each text rule to allow unlimited scaling.
+  */
+  --fluid-min-w: var(--layout-min-w, 375);
+  --fluid-max-w: var(--layout-max-w, 1600);
+  --fluid-slope: calc((100vw - --spacing(var(--fluid-min-w))) / (var(--fluid-max-w) - var(--fluid-min-w)));
+
+  /* 10px - 11px. The micro label: a field's floating label and its error, which sit ON a border and
+     have a hairline of room rather than a line of it. Tracked, unlike every other token here: at this size
+     uppercase letterforms close up, and the pixel faces this is set in are the worst of it. */
+  --text-eyebrow: clamp(--spacing(10), --spacing(10) + (11 - 10) * var(--fluid-slope), --spacing(11));
+  --text-eyebrow--font-weight: 400;
+  --text-eyebrow--line-height: 1;
+  --text-eyebrow--letter-spacing: 0.08em;
+
+  /* 12px - 14px */
+  --text-caption: clamp(--spacing(12), --spacing(12) + (14 - 12) * var(--fluid-slope), --spacing(14));
+  --text-caption--font-weight: 400;
+  --text-caption--line-height: 1.25;
+  --text-caption--letter-spacing: normal;
+
+  /* 14px - 16px */
+  --text-cta: clamp(--spacing(14), --spacing(14) + (16 - 14) * var(--fluid-slope), --spacing(16));
+  --text-cta--font-weight: 400;
+  --text-cta--line-height: 1.25;
+  --text-cta--letter-spacing: normal;
+
+  /* 14px - 18px */
+  --text-body-10: clamp(--spacing(14), --spacing(14) + (18 - 14) * var(--fluid-slope), --spacing(18));
+  --text-body-10--font-weight: 400;
+  --text-body-10--line-height: 1.25;
+  --text-body-10--letter-spacing: normal;
+
+  /* 16px - 24px */
+  --text-body-20: clamp(--spacing(16), --spacing(16) + (24 - 16) * var(--fluid-slope), --spacing(24));
+  --text-body-20--font-weight: 400;
+  --text-body-20--line-height: 1.25;
+  --text-body-20--letter-spacing: normal;
+
+  /* 32px - 48px */
+  --text-headline-10: clamp(--spacing(32), --spacing(32) + (48 - 32) * var(--fluid-slope), --spacing(48));
+  --text-headline-10--font-weight: 400;
+  --text-headline-10--line-height: 1.1;
+  --text-headline-10--letter-spacing: normal;
+
+  /* 40px - 80px */
+  --text-headline-20: clamp(--spacing(40), --spacing(40) + (80 - 40) * var(--fluid-slope), --spacing(80));
+  --text-headline-20--font-weight: 400;
+  --text-headline-20--line-height: 1.1;
+  --text-headline-20--letter-spacing: normal;
+}

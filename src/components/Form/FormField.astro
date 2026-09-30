@@ -1,0 +1,76 @@
+---
+import { cx } from "~/features/style/utils";
+import { FIELD_BORDER_CHIP_CLASS } from "./styles";
+
+// The shell every form field shares: the box, the label that floats onto the top border once the control
+// holds a value, and the error on the bottom border. The control is the slot.
+type Props = {
+  name: string;
+  label: string;
+  id?: string;
+  error?: string;
+  required?: boolean;
+  filled?: boolean;
+  floating?: boolean;
+  inline?: boolean;
+  multiline?: boolean;
+  class?: string;
+};
+
+const { name, label, id = name, error, required, filled, floating, inline, multiline, class: className } = Astro.props;
+
+const BORDER_CLASS =
+  "border border-white/20 group-hover:border-white/40 group-focus-within:border-white " +
+  "has-[[data-field-control]:disabled]:border-white/10 group-data-invalid:border-danger";
+
+const boxClass = cx(
+  "flex w-full rounded-4 bg-white/5 transition-colors duration-200 ease-out motion-reduce:transition-none",
+  inline && "h-52 items-center gap-16 py-4 pr-4 pl-16",
+  !inline && !multiline && cx("h-44 items-center gap-8 px-16", BORDER_CLASS),
+  multiline && cx("items-start gap-8 px-16 py-12", BORDER_CLASS)
+);
+
+// The chip sits on the box's border, so its offsets are half its own height (the token's line-height is 1).
+const chipClass = cx(FIELD_BORDER_CHIP_CLASS, "left-12");
+---
+
+<form-field
+  data-field
+  class={cx('group relative block', className)}
+  data-filled={filled ? '' : undefined}
+  data-invalid={error ? '' : undefined}
+>
+  <div class={boxClass}>
+    <slot />
+  </div>
+
+  <label
+    for={id}
+    class={cx(
+      inline
+        ? 'sr-only'
+        : [
+            chipClass,
+            '-top-5 translate-y-4 text-white/60 opacity-0 transition duration-200 ease-out motion-reduce:transition-none',
+            'group-focus-within:translate-y-0 group-focus-within:opacity-100',
+            'group-data-filled:translate-y-0 group-data-filled:opacity-100',
+            floating && 'translate-y-0 opacity-100',
+          ]
+    )}
+  >
+    {label}{required && <span aria-hidden="true">*</span>}
+  </label>
+
+  <p
+    id={`${id}-error`}
+    data-field-error={name}
+    aria-live="polite"
+    class={cx(chipClass, 'text-danger empty:hidden', inline ? '-bottom-16' : '-bottom-5')}
+  >
+    {error}
+  </p>
+</form-field>
+
+<script>
+  import './FormFieldElement'
+</script>

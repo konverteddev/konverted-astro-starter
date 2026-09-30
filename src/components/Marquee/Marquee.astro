@@ -1,0 +1,42 @@
+---
+import { cx } from "~/features/style/utils";
+
+// A looping line. Pass one self-contained run as the slot, its trailing separator included, so the
+// seam between repeats reads like the rest of the line.
+type Props = {
+  /** `overflow` moves the line only when it is wider than its room; `always` loops it whatever its length. */
+  loop?: "overflow" | "always";
+  /** Scroll speed in px/s. Constant whatever the content's length, so a long line is not a fast one. */
+  speed?: number;
+  /** Space between the end of one run and the start of the next, in px. */
+  gap?: number;
+  /** Room to keep clear at both ends, for chrome that sits over the line rather than beside it. */
+  reserve?: number;
+  class?: string;
+};
+
+const { loop = "overflow", speed = 60, gap = 0, reserve = 0, class: className } = Astro.props;
+---
+
+<marquee-line
+  class={cx('group/marquee flex', className)}
+  data-always={loop === 'always' ? '' : undefined}
+  data-speed={speed}
+  data-gap={gap}
+  data-reserve={reserve}
+>
+  <div
+    data-marquee-viewport
+    class="scrollbar-invisible flex min-w-0 flex-1 justify-center overflow-x-clip group-data-marquee/marquee:justify-start group-data-scroll/marquee:justify-start group-data-scroll/marquee:overflow-x-auto"
+  >
+    <div data-marquee-track class="flex w-max group-data-marquee/marquee:animate-marquee">
+      <div data-marquee-content class="flex shrink-0 items-center whitespace-nowrap">
+        <slot />
+      </div>
+    </div>
+  </div>
+</marquee-line>
+
+<script>
+  import './MarqueeElement'
+</script>

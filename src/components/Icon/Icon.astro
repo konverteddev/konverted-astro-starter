@@ -1,0 +1,39 @@
+---
+import { cx } from "~/features/style/utils";
+import arrowDown from "./icon-arrow-down.svg?raw";
+import arrowLeft from "./icon-arrow-left.svg?raw";
+import arrowRight from "./icon-arrow-right.svg?raw";
+import arrowUp from "./icon-arrow-up.svg?raw";
+import arrowUpRight from "./icon-arrow-up-right.svg?raw";
+import calendar from "./icon-calendar.svg?raw";
+import check from "./icon-check.svg?raw";
+import chevronDown from "./icon-chevron-down.svg?raw";
+import close from "./icon-close.svg?raw";
+import rss from "./icon-rss.svg?raw";
+
+// The single registry: every inline SVG on a public page is imported here and nowhere else.
+const icons = {
+  "arrow-right": arrowRight,
+  "arrow-left": arrowLeft,
+  "arrow-up": arrowUp,
+  "arrow-down": arrowDown,
+  "arrow-up-right": arrowUpRight,
+  calendar,
+  check,
+  "chevron-down": chevronDown,
+  close,
+  rss,
+} as const;
+
+export type IconName = keyof typeof icons;
+
+type Props = { name: IconName; class?: string };
+
+const { name, class: className } = Astro.props;
+---
+
+<span
+  aria-hidden="true"
+  class={cx('inline-flex size-[1em] shrink-0 *:size-full', className)}
+  set:html={icons[name]}
+/>

@@ -1,0 +1,47 @@
+---
+import Icon from "~/components/Icon/Icon.astro";
+import { cx } from "~/features/style/utils";
+import FormField from "./FormField.astro";
+import { fieldLabel } from "./label";
+import { FIELD_ADORNMENT_CLASS, FIELD_CONTROL_CLASS } from "./styles";
+
+// A native select. It stretches across the box so the whole field opens the list, and the empty option
+// stands in for the placeholder a select cannot have.
+export type FormOption = { value: string; label: string };
+
+type Props = {
+  name: string;
+  label: string;
+  options: FormOption[];
+  id?: string;
+  value?: string;
+  error?: string;
+  required?: boolean;
+  disabled?: boolean;
+  class?: string;
+};
+
+const { name, label, options, id = name, value, error, required, disabled, class: className } = Astro.props;
+---
+
+<FormField name={name} label={label} id={id} error={error} required={required} filled={Boolean(value)} class={className}>
+  <select
+    id={id}
+    name={name}
+    required={required}
+    disabled={disabled}
+    aria-describedby={`${id}-error`}
+    aria-invalid={error ? 'true' : undefined}
+    data-field-control
+    class={cx(
+      FIELD_CONTROL_CLASS,
+      'absolute inset-0 h-full appearance-none rounded-4 px-16 pr-40 text-white/60 group-data-filled:text-white'
+    )}
+  >
+    <option value="" disabled selected={!value}>{fieldLabel(label, required)}</option>
+
+    {options.map((option) => <option value={option.value} selected={option.value === value}>{option.label}</option>)}
+  </select>
+
+  <Icon name="chevron-down" class={FIELD_ADORNMENT_CLASS} />
+</FormField>

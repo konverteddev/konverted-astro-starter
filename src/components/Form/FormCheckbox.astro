@@ -1,0 +1,41 @@
+---
+import { cx } from "~/features/style/utils";
+import FormChoice from "./FormChoice.astro";
+import { fieldLabel } from "./label";
+import { FIELD_CHIP_CLASS } from "./styles";
+
+// A single checkbox that answers for itself; a set answering one question is `FormChoiceGroup`.
+// It submits `value` only when checked, so the schema reads that string or an empty one.
+type Props = {
+  name: string;
+  label: string;
+  id?: string;
+  value?: string;
+  checked?: boolean;
+  error?: string;
+  required?: boolean;
+  disabled?: boolean;
+  class?: string;
+};
+
+const { name, label, id = name, value = "on", checked, error, required, disabled, class: className } = Astro.props;
+---
+
+<div data-field data-invalid={error ? '' : undefined} class={cx('group/field flex flex-col gap-8', className)}>
+  <FormChoice
+    type="checkbox"
+    name={name}
+    id={id}
+    value={value}
+    label={fieldLabel(label, required)}
+    checked={checked}
+    required={required}
+    disabled={disabled}
+    describedBy={`${id}-error`}
+    invalid={Boolean(error)}
+  />
+
+  <p id={`${id}-error`} data-field-error={name} aria-live="polite" class={cx(FIELD_CHIP_CLASS, 'text-danger empty:hidden')}>
+    {error}
+  </p>
+</div>

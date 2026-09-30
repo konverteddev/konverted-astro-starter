@@ -1,0 +1,14 @@
+---
+import type { PageQResult } from "~/sanity/types";
+import SanityRichText from "../../sanity/rich-text/SanityRichText.astro";
+
+// A legal page is prose, so it renders like an article without the byline: the heading and the body.
+type Props = { page: Extract<PageQResult, { _type: "legalPage" }> };
+
+const { page } = Astro.props;
+---
+
+<article class="mx-auto flex w-full max-w-(--page-width) flex-col gap-48 px-(--page-gutter) py-64 lg:gap-64 lg:py-96">
+  <h1 class="text-balance text-headline-10">{page.title}</h1>
+  <SanityRichText value={page.content} class="text-body-10" />
+</article>

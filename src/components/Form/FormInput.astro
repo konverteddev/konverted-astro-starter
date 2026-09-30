@@ -1,0 +1,59 @@
+---
+import Button from "~/components/Button.astro";
+import { cx } from "~/features/style/utils";
+import FormField from "./FormField.astro";
+import { fieldLabel } from "./label";
+import { FIELD_CONTROL_CLASS } from "./styles";
+
+// A single-line text field. Passing `submit` turns it into the inline variant: the same input with its
+// own submit button inside the box, for a one-field form that sits in a band rather than in a column.
+type Props = {
+  name: string;
+  label: string;
+  type?: "text" | "email" | "tel" | "url";
+  id?: string;
+  value?: string;
+  error?: string;
+  required?: boolean;
+  disabled?: boolean;
+  autocomplete?: string;
+  maxlength?: number;
+  submit?: string;
+  class?: string;
+};
+
+const {
+  name,
+  label,
+  type = "text",
+  id = name,
+  value,
+  error,
+  required,
+  disabled,
+  autocomplete,
+  maxlength,
+  submit,
+  class: className,
+} = Astro.props;
+---
+
+<FormField name={name} label={label} id={id} error={error} required={required} inline={Boolean(submit)} class={className}>
+  <input
+    id={id}
+    name={name}
+    type={type}
+    value={value}
+    placeholder={fieldLabel(label, required)}
+    required={required}
+    disabled={disabled}
+    autocomplete={autocomplete}
+    maxlength={maxlength}
+    aria-describedby={`${id}-error`}
+    aria-invalid={error ? 'true' : undefined}
+    data-field-control
+    class={cx(FIELD_CONTROL_CLASS, submit && 'focus:placeholder:text-white/60')}
+  />
+
+  {submit && <Button type="submit" disabled={disabled}>{submit}</Button>}
+</FormField>

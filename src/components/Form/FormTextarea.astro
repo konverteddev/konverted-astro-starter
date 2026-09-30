@@ -1,0 +1,39 @@
+---
+import { cx } from "~/features/style/utils";
+import FormField from "./FormField.astro";
+import { fieldLabel } from "./label";
+import { FIELD_CONTROL_CLASS } from "./styles";
+
+// A multi-line text field. `multiline` is what lets the shell's box grow with `rows` instead of holding
+// a single text line's height.
+type Props = {
+  name: string;
+  label: string;
+  id?: string;
+  value?: string;
+  rows?: number;
+  error?: string;
+  required?: boolean;
+  disabled?: boolean;
+  maxlength?: number;
+  class?: string;
+};
+
+const { name, label, id = name, value, rows = 5, error, required, disabled, maxlength, class: className } = Astro.props;
+---
+
+<FormField name={name} label={label} id={id} error={error} required={required} multiline class={className}>
+  <textarea
+    id={id}
+    name={name}
+    rows={rows}
+    placeholder={fieldLabel(label, required)}
+    required={required}
+    disabled={disabled}
+    maxlength={maxlength}
+    aria-describedby={`${id}-error`}
+    aria-invalid={error ? 'true' : undefined}
+    data-field-control
+    class={cx(FIELD_CONTROL_CLASS, 'resize-y leading-normal')}
+  >{value}</textarea>
+</FormField>

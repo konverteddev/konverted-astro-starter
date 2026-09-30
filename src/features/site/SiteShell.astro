@@ -1,0 +1,16 @@
+---
+import SiteAnnouncement from "./site-announcement/SiteAnnouncement.astro";
+import SiteFooter from "./site-footer/SiteFooter.astro";
+import SiteHeader from "./site-header/SiteHeader.astro";
+
+type Props = { showHeader?: boolean; showFooter?: boolean };
+
+const { showHeader = true, showFooter = true } = Astro.props;
+---
+
+<div class="flex min-h-svh flex-col">
+  <SiteAnnouncement />
+  {showHeader && <SiteHeader />}
+  <main class="flex-1" data-page-out="fade" data-page-in="fade"><slot /></main>
+  {showFooter && <SiteFooter />}
+</div>

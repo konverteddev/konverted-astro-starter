@@ -1,0 +1,87 @@
+---
+import { stegaClean } from "@sanity/client/stega";
+import FormCheckbox from "~/components/Form/FormCheckbox.astro";
+import FormChoiceGroup from "~/components/Form/FormChoiceGroup.astro";
+import FormDate from "~/components/Form/FormDate.astro";
+import FormDropdown from "~/components/Form/FormDropdown.astro";
+import FormInput from "~/components/Form/FormInput.astro";
+import FormPhone from "~/components/Form/FormPhone.astro";
+import FormTextarea from "~/components/Form/FormTextarea.astro";
+import SubmitButton from "~/components/SubmitButton.astro";
+import { ContactFormSectionQ } from "~/features/page-builder/queries";
+import SectionFrame from "~/features/page-builder/SectionFrame.astro";
+import type { SectionProps } from "~/features/page-builder/types";
+import type { ContactFormSectionQResult } from "~/sanity/types";
+import { getDraftModeProps } from "../../../../sanity/lib/draft-mode";
+import { loadQuery } from "../../../../sanity/lib/load-query";
+import SanityRichText from "../../../../sanity/rich-text/SanityRichText.astro";
+import { CONTACT_BUDGETS, CONTACT_SERVICES, CONTACT_TOPICS, contactForm } from "./validate-contact-form";
+
+type Props = SectionProps;
+
+const { docId, sectionKey } = Astro.props;
+
+const { data: section } = await loadQuery<ContactFormSectionQResult>({
+  query: ContactFormSectionQ,
+  params: { docId, sectionKey },
+  ...getDraftModeProps(Astro),
+});
+
+const { headline, text } = section?.content ?? {};
+
+// Name and asterisk come off the schema, so a rule change cannot leave the form behind (see docs/features/forms.md).
+const { field } = contactForm;
+
+const endpoint = "/api/contact-form";
+---
+
+{
+  section?.content && (
+    <SectionFrame
+      settings={section.settings}
+      id={stegaClean(section.settings?.hash) ?? undefined}
+      data-page-builder-section="contactFormSection"
+      class="flex flex-col gap-32"
+    >
+      {headline && <h2 class="text-headline-10 text-balance whitespace-pre-line">{headline}</h2>}
+      <SanityRichText animated value={text} class="text-body-10" />
+      <contact-form>
+        <form method="post" action={endpoint} class="flex flex-col gap-24">
+          <input
+            type="text"
+            name="website"
+            autocomplete="off"
+            tabindex="-1"
+            aria-hidden="true"
+            class="pointer-events-none absolute -left-[9999px] -z-1 h-px w-px overflow-hidden opacity-0"
+          />
+
+          <div class="grid gap-24 md:grid-cols-2">
+            <FormInput {...field('firstName')} label="First Name" autocomplete="given-name" />
+            <FormInput {...field('lastName')} label="Last Name" autocomplete="family-name" />
+            <FormInput {...field('email')} label="Email" type="email" autocomplete="email" />
+            <FormPhone {...field('phone')} label="Phone" />
+            <FormDropdown {...field('topic')} label="Topic" options={[...CONTACT_TOPICS]} />
+            <FormDate {...field('startDate')} label="Preferred start date" />
+          </div>
+
+          <FormChoiceGroup {...field('budget')} type="radio" label="Budget" options={[...CONTACT_BUDGETS]} />
+
+          <FormChoiceGroup {...field('services')} type="checkbox" label="Services" options={[...CONTACT_SERVICES]} />
+
+          <FormTextarea {...field('message')} label="Message" />
+
+          <FormCheckbox {...field('consent')} label="I agree to the processing of my data as described in the privacy policy" />
+
+          <SubmitButton label="Send Message" pendingLabel="Sending" doneLabel="Message sent" class="w-full" />
+
+          <p data-form-message class="text-caption empty:hidden" aria-live="polite" />
+        </form>
+      </contact-form>
+    </SectionFrame>
+  )
+}
+
+<script>
+  import './ContactFormElement'
+</script>

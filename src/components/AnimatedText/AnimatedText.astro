@@ -1,0 +1,66 @@
+---
+import type { SplitLevel } from "kugiri";
+import { cx } from "~/features/style/utils";
+
+// Line-split intro animation, revealed once fonts, the page transition and the viewport gate all allow.
+// Never `display: inline`: block line masks would fragment an inline ancestor's box.
+type Props = {
+  /** Use `div` when wrapping block-level content (e.g. full rich text) so the split spans all lines in order. */
+  as?: "span" | "div";
+  class?: string;
+  staggerDelay?: number;
+  duration?: number;
+  animationDelay?: number;
+  /** Optional selector for text-only split targets inside the host. */
+  splitSelector?: string;
+  /** The unit that moves: painted lines by default, or the words or chars inside them. */
+  split?: SplitLevel;
+  /** A selector for elements to leave whole: never cut into, never wrapped, never a unit. */
+  ignore?: string;
+  /** Which units get a clip wrapper to rise from under: the animated unit by default, any levels, or `false` for none. */
+  mask?: false | SplitLevel | SplitLevel[];
+  /** `css` hands the reveal to a stylesheet: the element splits, sets `data-revealed`, and does nothing else. */
+  reveal?: "css";
+  /** Replay on demand (`prepare()`, `show()`, `hide()`) instead of once as part of the page intro. Starts hidden. */
+  manual?: boolean;
+  /** `false` skips viewport gating (plays as soon as fonts/transition allow); `margin` overrides the observer rootMargin. */
+  viewport?: false | { margin?: string };
+};
+
+const {
+  as = "span",
+  class: className,
+  staggerDelay,
+  duration,
+  animationDelay,
+  splitSelector,
+  split,
+  ignore,
+  mask,
+  reveal,
+  manual,
+  viewport,
+} = Astro.props;
+---
+
+<animated-text
+  class={cx(as === "div" ? "block w-full" : "inline-block", className)}
+  style={manual ? "opacity: 0" : "opacity: 0.001"}
+  data-manual={manual ? "" : undefined}
+  data-stagger={staggerDelay}
+  data-duration={duration}
+  data-delay={animationDelay}
+  data-split-selector={splitSelector}
+  data-unit={split}
+  data-ignore={ignore}
+  data-mask={mask === false ? "none" : mask === undefined ? undefined : [mask].flat().join(" ")}
+  data-reveal={reveal}
+  data-viewport-disabled={viewport === false ? "" : undefined}
+  data-viewport-margin={viewport === false ? undefined : viewport?.margin}
+>
+  <slot />
+</animated-text>
+
+<script>
+  import './AnimatedTextElement'
+</script>

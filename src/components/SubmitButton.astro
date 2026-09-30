@@ -1,0 +1,55 @@
+---
+import Button from "~/components/Button.astro";
+import Icon from "~/components/Icon/Icon.astro";
+import Spinner from "~/components/Spinner.astro";
+import type { SubmitStateName } from "~/features/forms/submit-state";
+import { cx } from "~/features/style/utils";
+
+// A submit button that reports the request inside itself. Every state is server-rendered and CSS picks
+// one off `data-submit-state`, so nothing flashes and DOM identity survives the round trip.
+type Props = {
+  label: string;
+  pendingLabel?: string;
+  doneLabel?: string;
+  /** The state to render in; a live form takes it over from here. */
+  state?: SubmitStateName;
+  class?: string;
+};
+
+const { label, pendingLabel = "Sending", doneLabel = "Done", state = "idle", class: className } = Astro.props;
+
+const LABELS: Record<SubmitStateName, string> = { idle: label, pending: pendingLabel, done: doneLabel };
+
+// One grid cell holds all three, so the button is as wide as its widest state and never resizes mid-flight.
+const STATE_CLASS =
+  "col-start-1 row-start-1 flex items-center justify-center gap-8 opacity-0 " +
+  "transition duration-300 ease-out motion-reduce:transition-none";
+
+// States only ever run idle -> pending -> done, so each one leaves upwards and arrives from below.
+const IDLE_CLASS =
+  "-translate-y-8 group-data-[submit-state=idle]/submit:translate-y-0 group-data-[submit-state=idle]/submit:opacity-100";
+const PENDING_CLASS =
+  "translate-y-8 group-data-[submit-state=done]/submit:-translate-y-8 " +
+  "group-data-[submit-state=pending]/submit:translate-y-0 group-data-[submit-state=pending]/submit:opacity-100";
+const DONE_CLASS =
+  "translate-y-8 group-data-[submit-state=done]/submit:translate-y-0 group-data-[submit-state=done]/submit:opacity-100";
+---
+
+<Button
+  type="submit"
+  data-submit-state={state}
+  aria-label={LABELS[state]}
+  class={cx('group/submit grid overflow-hidden disabled:opacity-100 disabled:grayscale-0', className)}
+>
+  <span aria-hidden="true" data-submit-label="idle" class={cx(STATE_CLASS, IDLE_CLASS)}>{label}</span>
+
+  <span aria-hidden="true" data-submit-label="pending" class={cx(STATE_CLASS, PENDING_CLASS)}>
+    <Spinner class="size-16" />
+    {pendingLabel}
+  </span>
+
+  <span aria-hidden="true" data-submit-label="done" class={cx(STATE_CLASS, DONE_CLASS)}>
+    <Icon name="check" class="size-16" />
+    {doneLabel}
+  </span>
+</Button>

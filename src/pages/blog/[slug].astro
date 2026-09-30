@@ -1,0 +1,135 @@
+---
+import { stegaClean } from "@sanity/client/stega";
+import Chip from "~/components/Chip.astro";
+import JsonLd from "~/components/JsonLd.astro";
+import AuthorDialog from "~/features/blog/author/AuthorDialog.astro";
+import AuthorLink from "~/features/blog/author/AuthorLink.astro";
+import { formatDate } from "~/features/blog/format-date";
+import { formatReadingTime } from "~/features/blog/reading-time";
+import FeedLink from "~/features/feed/FeedLink.astro";
+import { feedTitle } from "~/features/feed/title";
+import SiteShell from "~/features/site/SiteShell.astro";
+import { blogPostingLd, breadcrumbLd, jsonLdGraph, webPageLd } from "~/features/site/seo/structured-data";
+import Web from "~/layouts/Web.astro";
+import { CACHE_TTL, docCacheTags, SITE_WIDE_CACHE_TAGS } from "~/lib/cache";
+import { absoluteUrl, PUBLIC_SITE_URL } from "~/lib/env";
+import { SANITY_AUTHOR_PATH_PREFIX, SANITY_BLOG_INDEX_URI, SANITY_PERSON_DOCUMENT_TYPE } from "~/sanity/constants";
+import type { ArticlePageQResult } from "~/sanity/types";
+import { getDraftModeProps } from "../../sanity/lib/draft-mode";
+import { loadQuery } from "../../sanity/lib/load-query";
+import { ArticlePageQ } from "../../sanity/queries";
+import SanityRichText from "../../sanity/rich-text/SanityRichText.astro";
+import { getOgImageSrc, loadSite, seo } from "../../sanity/seo";
+
+// Prefix route for `article` documents: uris look like /blog/<slug>.
+const uri = `${SANITY_BLOG_INDEX_URI}/${Astro.params.slug}`;
+
+const [{ data: page }, { data: site }] = await Promise.all([
+  loadQuery<ArticlePageQResult>({ query: ArticlePageQ, params: { uri }, ...getDraftModeProps(Astro) }),
+  loadSite(Astro),
+]);
+
+if (!page) {
+  return new Response(null, { status: 404 });
+}
+
+// `person` too, so publishing the author refreshes the byline and the panel it opens.
+Astro.cache.set({
+  ...CACHE_TTL,
+  tags: [...docCacheTags(page), SANITY_PERSON_DOCUMENT_TYPE, ...SITE_WIDE_CACHE_TAGS],
+});
+
+const canonical = absoluteUrl(uri);
+const { title, description, image, robots } = page.seoMetadata ?? {};
+const seoProps = seo(site, {
+  robots,
+  title: title ?? page.title,
+  description,
+  image,
+  canonical,
+});
+
+const authorHref = stegaClean(page.author?.href);
+const categories = (page.categories ?? []).filter((category): category is string => Boolean(category));
+const pageJsonLd = jsonLdGraph([
+  webPageLd({ name: seoProps.title, url: canonical, description: seoProps.description, siteUrl: PUBLIC_SITE_URL }),
+  blogPostingLd({
+    headline: page.title ?? undefined,
+    url: canonical,
+    siteUrl: PUBLIC_SITE_URL,
+    description: seoProps.description,
+    datePublished: page.publishedAt ?? undefined,
+    dateModified: page._updatedAt ?? undefined,
+    authorName: page.author?.name ?? undefined,
+    authorUrl: authorHref ? absoluteUrl(authorHref) : undefined,
+    image: page.image?._id != null ? getOgImageSrc(page.image) : undefined,
+    articleSection: categories,
+  }),
+  // Home > Blog > Article: the index is a real rung, and its label is the blog singleton's `title`.
+  breadcrumbLd([
+    { name: "Home", url: absoluteUrl("/") },
+    { name: page.blogTitle ?? "", url: absoluteUrl(SANITY_BLOG_INDEX_URI) },
+    { name: page.title ?? "", url: canonical },
+  ]),
+]);
+
+// Built as parts rather than a joined string: each is optional and only the author is a link.
+const readingTime = formatReadingTime(page.content);
+const meta = [
+  page.publishedAt ? { text: formatDate(stegaClean(page.publishedAt)) } : null,
+  page.author?.name ? { text: page.author.name, href: authorHref } : null,
+  readingTime ? { text: readingTime } : null,
+].filter((part) => part !== null);
+---
+
+<Web {...seoProps}>
+  <Fragment slot="head">
+    <FeedLink title={feedTitle(seoProps.siteName, page.blogTitle)} />
+  </Fragment>
+  <JsonLd data={pageJsonLd} />
+  <SiteShell showHeader={page.showHeader} showFooter={page.showFooter}>
+    <article
+      data-page-in-place-family={`${uri} ${SANITY_AUTHOR_PATH_PREFIX}`}
+      data-page-in-place-scope
+      class="mx-auto flex w-full max-w-(--page-width) flex-col gap-48 px-(--page-gutter) py-64 lg:gap-64 lg:py-96"
+    >
+      <header class="flex flex-col gap-24">
+        <h1 class="text-balance text-headline-10">{page.title}</h1>
+        {
+          meta.length > 0 && (
+            <p class="flex flex-wrap items-center gap-x-8 text-body-10 opacity-60">
+              {meta.map((part, index) => (
+                <Fragment>
+                  {index > 0 && <span aria-hidden="true">·</span>}
+                  {part.href ? (
+                    <AuthorLink
+                      name={part.text}
+                      href={part.href}
+                      class="underline underline-offset-4 transition-opacity hover:opacity-70 motion-reduce:transition-none"
+                    />
+                  ) : (
+                    <span>{part.text}</span>
+                  )}
+                </Fragment>
+              ))}
+            </p>
+          )
+        }
+        {
+          categories.length > 0 && (
+            <ul class="flex flex-wrap gap-8">
+              {categories.map((category) => (
+                <li>
+                  <Chip label={category} />
+                </li>
+              ))}
+            </ul>
+          )
+        }
+      </header>
+      <SanityRichText value={page.content} class="text-body-10" />
+    </article>
+
+    <AuthorDialog hostPath={uri} />
+  </SiteShell>
+</Web>

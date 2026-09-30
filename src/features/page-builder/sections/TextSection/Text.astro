@@ -1,0 +1,23 @@
+---
+import type { ComponentProps } from "astro/types";
+import SectionFrame from "~/features/page-builder/SectionFrame.astro";
+import type { SectionLayoutSettings } from "~/features/page-builder/section-layout";
+import SanityRichText from "../../../../sanity/rich-text/SanityRichText.astro";
+
+// A column of rich text the page reads straight through, under an optional heading.
+type Props = {
+  headline?: string | null;
+  text?: ComponentProps<typeof SanityRichText>["value"];
+  settings?: SectionLayoutSettings | null;
+  id?: string;
+  class?: string;
+  [key: `data-${string}`]: string | undefined;
+};
+
+const { headline, text, settings, id, class: className, ...data } = Astro.props;
+---
+
+<SectionFrame settings={settings} id={id} class={className} {...data}>
+  {headline && <h1 class="mb-24 text-balance whitespace-pre-line text-headline-10">{headline}</h1>}
+  <SanityRichText animated value={text} class="text-body-10" />
+</SectionFrame>

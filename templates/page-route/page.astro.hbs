@@ -1,0 +1,43 @@
+---
+import Web from '~/layouts/Web.astro'
+import PageSections from '~/features/page-builder/PageSections.astro'
+import { PageSectionsQ } from '~/features/page-builder/queries'
+import SiteShell from '~/features/site/SiteShell.astro'
+import { absoluteUrl } from '~/lib/env'
+import { getDraftModeProps } from '../../sanity/lib/draft-mode'
+import { loadQuery } from '../../sanity/lib/load-query'
+import { {{pascalCase documentType}}PageQ } from '../../sanity/queries'
+import { loadSite, seo } from '../../sanity/seo'
+import type { {{pascalCase documentType}}PageQResult, PageSectionsQResult } from '~/sanity/types'
+
+// Prefix route for `{{camelCase documentType}}` documents: uris look like /{{kebabCase routePrefix}}/<slug>.
+const uri = `/{{kebabCase routePrefix}}/${Astro.params.slug}`
+
+const draftModeProps = getDraftModeProps(Astro)
+
+// All three read the same uri and none depends on the others, so they cost one round trip together.
+const [{ data: page }, { data: pageSections }, { data: site }] = await Promise.all([
+  loadQuery<{{pascalCase documentType}}PageQResult>({ query: {{pascalCase documentType}}PageQ, params: { uri }, ...draftModeProps }),
+  loadQuery<PageSectionsQResult>({ query: PageSectionsQ, params: { uri }, ...draftModeProps }),
+  loadSite(Astro),
+])
+
+if (!page) {
+  return new Response(null, { status: 404 })
+}
+
+const { title, description, image, robots } = page.seoMetadata ?? {}
+const seoProps = seo(site, {
+  robots,
+  title: title ?? page.title,
+  description,
+  image,
+  canonical: absoluteUrl(uri),
+})
+---
+
+<Web {...seoProps}>
+  <SiteShell>
+    <PageSections docId={page._id} pageSections={pageSections} />
+  </SiteShell>
+</Web>

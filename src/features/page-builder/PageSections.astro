@@ -1,0 +1,31 @@
+---
+import type { PageSectionsQResult } from "~/sanity/types";
+import ContactFormSection from "./sections/ContactFormSection/ContactFormSection.astro";
+import CtaSection from "./sections/CtaSection/CtaSection.astro";
+import HeadlineSection from "./sections/HeadlineSection/HeadlineSection.astro";
+import MediaSection from "./sections/MediaSection/MediaSection.astro";
+import TextSection from "./sections/TextSection/TextSection.astro";
+
+// PLOP: Add Import
+
+// The route fetches the section list so it runs alongside its document query; each section fetches its own content.
+type Props = { docId: string; pageSections: PageSectionsQResult };
+
+const { docId, pageSections } = Astro.props;
+
+const sections = {
+  mediaSectionField: MediaSection,
+  ctaSectionField: CtaSection,
+  textSectionField: TextSection,
+  contactFormSectionField: ContactFormSection,
+  headlineSectionField: HeadlineSection,
+  // PLOP: Add Export
+} as const;
+---
+
+<div class="flex w-full flex-col gap-80 py-64 lg:gap-120 lg:py-96">
+  {(pageSections ?? []).map((section, index) => {
+    const Component = sections[section._type as keyof typeof sections]
+    return Component ? <Component docId={docId} sectionKey={section._key} isFirst={index === 0} /> : null
+  })}
+</div>

@@ -1,0 +1,31 @@
+---
+import { stegaClean } from "@sanity/client/stega";
+import AnimatedText from "~/components/AnimatedText/AnimatedText.astro";
+import type { LinkFragmentResult } from "~/features/sanity/link/fragment";
+import SanityLink from "~/features/sanity/link/SanityLink.astro";
+import { cx } from "~/features/style/utils";
+
+// Shared header/footer nav link with active-page styling and an animated text reveal.
+type Props = {
+  link: LinkFragmentResult;
+  animationDelay?: number;
+  viewport?: false | { margin?: string };
+};
+
+const { link, animationDelay, viewport } = Astro.props;
+
+const pathname = Astro.url.pathname.replace(/\/$/, "") || "/";
+// stegaClean: in preview, `link.href` carries invisible stega characters that break strict comparison.
+const href = stegaClean(link.href ?? "");
+const isActive = Boolean(href) && pathname === (href.split(/[?#]/)[0]?.replace(/\/$/, "") || "/");
+---
+
+<SanityLink
+  link={link}
+  aria-current={isActive ? "page" : undefined}
+  class={cx("text-body-10 text-white/75 transition-colors duration-200 ease-out hover:text-white", isActive && "text-white")}
+>
+  <AnimatedText animationDelay={animationDelay} viewport={viewport} class={cx(isActive && "underline underline-offset-4")}>
+    {link.text}
+  </AnimatedText>
+</SanityLink>

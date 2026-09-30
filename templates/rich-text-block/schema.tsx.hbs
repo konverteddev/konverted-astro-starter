@@ -1,0 +1,25 @@
+import { defineArrayMember, defineField } from "sanity";
+
+export const {{camelCase name}} = defineArrayMember({
+  type: "object",
+  name: "{{camelCase name}}",
+  title: "{{titleCase (removeBlockSuffix name)}}",
+  icon: () => <>❓</>,
+  fields: [
+    defineField({
+      name: "title",
+      type: "string",
+    }),
+  ],
+  preview: {
+    select: {
+      title: "title",
+    },
+    prepare({ title }) {
+      return {
+        title,
+        subtitle: "{{titleCase (removeBlockSuffix name)}}",
+      };
+    },
+  },
+});

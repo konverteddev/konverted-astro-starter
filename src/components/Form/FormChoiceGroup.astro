@@ -1,0 +1,63 @@
+---
+import { cx } from "~/features/style/utils";
+import FormChoice from "./FormChoice.astro";
+import type { FormOption } from "./FormDropdown.astro";
+import { FIELD_CHIP_CLASS } from "./styles";
+
+// A set of options answering one question: `radio` for one answer, `checkbox` for any number.
+// `role="group"` rather than a fieldset, so the legend sits in the same flex rhythm as every field label.
+type Props = {
+  type: "checkbox" | "radio";
+  name: string;
+  label: string;
+  options: FormOption[];
+  id?: string;
+  value?: string | string[];
+  error?: string;
+  required?: boolean;
+  disabled?: boolean;
+  class?: string;
+};
+
+const { type, name, label, options, id = name, value, error, required, disabled, class: className } = Astro.props;
+
+const selected = new Set(Array.isArray(value) ? value : value ? [value] : []);
+
+// `required` on a checkbox asks for that box, not the group, so it stays on the radios and the legend speaks for the rest.
+const isRequiredControl = required && type === "radio";
+---
+
+<div
+  data-field
+  data-invalid={error ? '' : undefined}
+  role={type === 'radio' ? 'radiogroup' : 'group'}
+  aria-labelledby={`${id}-label`}
+  aria-describedby={`${id}-error`}
+  aria-invalid={error ? 'true' : undefined}
+  class={cx('group/field flex flex-col gap-12', className)}
+>
+  <span id={`${id}-label`} class={cx(FIELD_CHIP_CLASS, 'text-white/60')}>
+    {label}{required && <span aria-hidden="true">*</span>}
+  </span>
+
+  <div class="flex flex-col gap-12">
+    {
+      options.map((option) => (
+        <FormChoice
+          type={type}
+          name={name}
+          id={`${id}-${option.value}`}
+          value={option.value}
+          label={option.label}
+          checked={selected.has(option.value)}
+          required={isRequiredControl}
+          disabled={disabled}
+        />
+      ))
+    }
+  </div>
+
+  <p id={`${id}-error`} data-field-error={name} aria-live="polite" class={cx(FIELD_CHIP_CLASS, 'text-danger empty:hidden')}>
+    {error}
+  </p>
+</div>

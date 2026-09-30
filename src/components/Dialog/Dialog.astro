@@ -1,0 +1,50 @@
+---
+import Icon from "~/components/Icon/Icon.astro";
+import { cx } from "~/features/style/utils";
+
+// Ships closed, with whatever is slotted; the behavior lives in `DialogElement`.
+type Props = {
+  /** id of the heading that names the panel. Pass one whenever the content renders its own heading. */
+  labelledBy?: string;
+  /** Fallback name, for a panel with no heading of its own. */
+  label?: string;
+  placement?: "center" | "side";
+  closeLabel?: string;
+  class?: string;
+};
+
+const { labelledBy, label, placement = "center", closeLabel = "Close", class: className } = Astro.props;
+
+// `EXIT_MS` in DialogElement is the closing half of these durations and has to match.
+const base =
+  "isolate m-0 bg-black p-0 text-white opacity-0 ring-1 ring-white/15 transition-[opacity,translate,scale] duration-300 ease-in backdrop:bg-black/70 backdrop:opacity-0 backdrop:transition-opacity backdrop:duration-300 data-open:opacity-100 data-open:duration-500 data-open:ease-out data-open:backdrop:opacity-100 data-open:backdrop:duration-500 motion-reduce:transition-none motion-reduce:backdrop:transition-none";
+
+const panels = {
+  center: "inset-16 m-auto h-fit max-h-full w-auto max-w-640 scale-98 overflow-hidden data-open:scale-100",
+  side: "inset-y-0 right-0 left-auto h-dvh max-h-none w-full max-w-none translate-x-full overflow-hidden data-open:translate-x-0 md:w-9/10 md:max-w-560",
+};
+
+const contents = {
+  center: "max-h-full overflow-y-auto overscroll-contain p-24 pt-64 md:p-32 md:pt-72",
+  side: "h-full overflow-y-auto overscroll-contain p-24 pt-64 md:p-32 md:pt-72",
+};
+---
+
+<modal-dialog class="contents">
+  <dialog data-dialog aria-label={labelledBy ? undefined : label} aria-labelledby={labelledBy} class={cx(base, panels[placement], className)}>
+    <button
+      type="button"
+      data-dialog-close
+      aria-label={closeLabel}
+      class="absolute top-16 right-16 z-1 flex size-40 items-center justify-center rounded-full border border-white/20 bg-black text-white transition-colors duration-200 ease-out hover:border-white/50 motion-reduce:transition-none md:top-24 md:right-24"
+    >
+      <Icon name="close" class="size-16" />
+    </button>
+
+    <div data-dialog-content data-lenis-prevent class={contents[placement]}><slot /></div>
+  </dialog>
+</modal-dialog>
+
+<script>
+  import '~/components/Dialog/DialogElement'
+</script>

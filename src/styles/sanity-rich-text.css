@@ -1,0 +1,29 @@
+/* Element styling for Sanity rich text (SanityRichText). Blocks, lists, and marks carry their
+   classes inline (see src/sanity/rich-text/components), so this file keeps only the wrapper
+   layout and default-element rules with no component of their own. */
+
+.sanity-rich-text {
+  @apply flex w-full flex-col gap-[1em];
+}
+
+/* When a block is line-split (AnimatedText), only the first line keeps the block's text-indent. */
+.sanity-rich-text [data-text] > *:not(:first-child) {
+  text-indent: 0;
+}
+
+.sanity-rich-text em {
+  @apply italic;
+}
+
+.sanity-rich-text strong {
+  @apply font-bold;
+}
+
+.sanity-rich-text code {
+  @apply rounded-4 bg-white/10 px-[0.4em] py-[0.1em] font-mono text-[0.9em];
+}
+
+.sanity-rich-text figure img,
+.sanity-rich-text figure video {
+  @apply w-full;
+}

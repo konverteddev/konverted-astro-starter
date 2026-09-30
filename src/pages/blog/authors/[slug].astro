@@ -1,0 +1,134 @@
+---
+import { stegaClean } from "@sanity/client/stega";
+import Icon from "~/components/Icon/Icon.astro";
+import JsonLd from "~/components/JsonLd.astro";
+import AuthorProfile from "~/features/blog/author/AuthorProfile.astro";
+import { formatDate } from "~/features/blog/format-date";
+import SiteShell from "~/features/site/SiteShell.astro";
+import { breadcrumbLd, itemListLd, jsonLdGraph, personLd, profilePageLd } from "~/features/site/seo/structured-data";
+import Web from "~/layouts/Web.astro";
+import { CACHE_TTL, docCacheTags, SITE_WIDE_CACHE_TAGS } from "~/lib/cache";
+import { absoluteUrl, PUBLIC_SITE_URL } from "~/lib/env";
+import { SANITY_ARTICLE_DOCUMENT_TYPE, SANITY_AUTHOR_PATH_PREFIX, SANITY_BLOG_INDEX_URI } from "~/sanity/constants";
+import type { AuthorPageQResult } from "~/sanity/types";
+import { getDraftModeProps } from "../../../sanity/lib/draft-mode";
+import { loadQuery } from "../../../sanity/lib/load-query";
+import { AuthorPageQ } from "../../../sanity/queries";
+import { getOgImageSrc, loadSite, seo } from "../../../sanity/seo";
+
+// Prefix route for `person` documents. From an article the same profile arrives as a panel instead;
+// this page is what that panel is a view of, never a fallback for it.
+const uri = `${SANITY_AUTHOR_PATH_PREFIX}/${Astro.params.slug}`;
+
+const [{ data: page }, { data: site }] = await Promise.all([
+  loadQuery<AuthorPageQResult>({ query: AuthorPageQ, params: { uri }, ...getDraftModeProps(Astro) }),
+  loadSite(Astro),
+]);
+
+if (!page) {
+  return new Response(null, { status: 404 });
+}
+
+// `article` too, so publishing one under this byline refreshes the list below.
+Astro.cache.set({
+  ...CACHE_TTL,
+  tags: [...docCacheTags(page), SANITY_ARTICLE_DOCUMENT_TYPE, ...SITE_WIDE_CACHE_TAGS],
+});
+
+const canonical = absoluteUrl(uri);
+const { title, description, image, robots } = page.seoMetadata ?? {};
+const seoProps = seo(site, {
+  robots,
+  title: title ?? page.name,
+  description,
+  image,
+  canonical,
+});
+
+const profiles = (page.links ?? []).map((link) => link.href).filter((url): url is string => Boolean(url));
+const articles = page.articles ?? [];
+
+const pageJsonLd = jsonLdGraph([
+  // ProfilePage, not WebPage: `mainEntity` marks this URL as the identity every article's `author` resolves to.
+  profilePageLd({
+    name: seoProps.title,
+    url: canonical,
+    description: seoProps.description,
+    siteUrl: PUBLIC_SITE_URL,
+    mainEntityId: `${canonical}#person`,
+    dateCreated: page._createdAt,
+    dateModified: page._updatedAt,
+  }),
+  personLd({
+    name: page.name ?? undefined,
+    url: canonical,
+    siteUrl: PUBLIC_SITE_URL,
+    jobTitle: page.role ?? undefined,
+    description: seoProps.description,
+    image: page.image?._id != null ? getOgImageSrc(page.image) : undefined,
+    sameAs: profiles,
+  }),
+  // The listing as rendered, matching the blog index's treatment of its own list.
+  ...(articles.length > 0
+    ? [
+        itemListLd({
+          pageId: `${canonical}#webpage`,
+          id: `${canonical}#articles`,
+          items: articles.flatMap((article) => {
+            const href = stegaClean(article.href);
+
+            return href ? [{ url: absoluteUrl(href), name: stegaClean(article.title) ?? undefined }] : [];
+          }),
+        }),
+      ]
+    : []),
+  // Home > Blog > Author: the blog index is a real rung, and its label is the blog singleton's `title`.
+  breadcrumbLd([
+    { name: "Home", url: absoluteUrl("/") },
+    { name: page.blogTitle ?? "", url: absoluteUrl(SANITY_BLOG_INDEX_URI) },
+    { name: page.name ?? "", url: canonical },
+  ]),
+]);
+---
+
+<Web {...seoProps}>
+  <JsonLd data={pageJsonLd} />
+  <SiteShell showHeader={page.showHeader} showFooter={page.showFooter}>
+    <div class="mx-auto flex w-full max-w-(--page-width) flex-col gap-48 px-(--page-gutter) py-64 lg:gap-64 lg:py-96">
+      <a
+        href={SANITY_BLOG_INDEX_URI}
+        class="group inline-flex w-fit items-center gap-8 text-body-10 opacity-60 transition-opacity hover:opacity-100 motion-reduce:transition-none"
+      >
+        <Icon name="arrow-left" class="size-16" />
+        Back to {page.blogTitle ?? 'Blog'}
+      </a>
+
+      <div class="max-w-720">
+        <AuthorProfile author={page} as="h1" sizes="100vw lg:280px" />
+      </div>
+
+      {
+        articles.length > 0 && (
+          <section class="flex flex-col gap-24">
+            <h2 class="text-body-20">Articles</h2>
+            <ul class="flex flex-col gap-24">
+              {articles.map((article) => (
+                <li>
+                  <a
+                    href={stegaClean(article.href) ?? SANITY_BLOG_INDEX_URI}
+                    class="group flex flex-col gap-8 border-white/10 border-t pt-24"
+                  >
+                    <h3 class="text-balance text-body-10 transition-opacity group-hover:opacity-70">{article.title}</h3>
+                    {article.publishedAt && (
+                      <p class="text-body-10 opacity-60">{formatDate(stegaClean(article.publishedAt))}</p>
+                    )}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )
+      }
+    </div>
+  </SiteShell>
+</Web>

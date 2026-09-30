@@ -1,0 +1,63 @@
+---
+import { cx } from "~/features/style/utils";
+
+// Button with its variants flattened to a class map.
+// Renders an <a> when `href` is set, else a <button>.
+type Props = {
+  href?: string;
+  target?: string;
+  rel?: string;
+  download?: string | boolean;
+  type?: "button" | "submit" | "reset";
+  disabled?: boolean;
+  variant?: "primary" | "underline";
+  class?: string;
+  /** Set it when the label the reader hears is not the label on screen, as on a multi-state submit button. */
+  "aria-label"?: string;
+  /** Behaviour hooks a caller needs on the rendered element itself, e.g. the submit button's state. */
+  [key: `data-${string}`]: string | undefined;
+};
+
+const {
+  href,
+  target,
+  rel,
+  download,
+  type = "button",
+  disabled,
+  variant = "primary",
+  class: className,
+  "aria-label": ariaLabel,
+  ...data
+} = Astro.props;
+
+const base =
+  "inline-flex w-fit min-w-0 shrink-0 cursor-pointer items-center justify-center gap-8 whitespace-nowrap " +
+  "font-pixel-square text-cta uppercase transition-[colors_transform] duration-200 ease-out active:scale-[0.97] " +
+  "motion-reduce:transition-none motion-reduce:active:scale-100 " +
+  "disabled:pointer-events-none disabled:opacity-50 disabled:grayscale";
+
+const variants = {
+  primary: "h-44 rounded-4 bg-white px-24 text-black hover:bg-white/80",
+  underline: "text-white underline underline-offset-4",
+};
+
+// tailwind-merge so caller classes reliably beat the defaults (e.g. a custom height or color).
+const classes = cx(base, variants[variant], className);
+---
+
+{
+  href ? (
+    <a href={href} target={target} rel={rel} download={download} class={classes} aria-label={ariaLabel} {...data}>
+      <slot name="left-icon" />
+      <slot />
+      <slot name="right-icon" />
+    </a>
+  ) : (
+    <button type={type} disabled={disabled} class={classes} aria-label={ariaLabel} {...data}>
+      <slot name="left-icon" />
+      <slot />
+      <slot name="right-icon" />
+    </button>
+  )
+}

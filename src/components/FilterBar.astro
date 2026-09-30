@@ -1,0 +1,45 @@
+---
+import Chip from "~/components/Chip.astro";
+import { cx } from "~/features/style/utils";
+
+// A row of filter toggles, each a plain link carrying the resulting query string, so filtering is a
+// normal navigation: no JavaScript needed, survives a reload, and the filtered URL can be shared.
+export type FilterOption = {
+  key: string;
+  label: string;
+  href: string;
+  isActive: boolean;
+};
+
+type Props = {
+  label: string;
+  options: FilterOption[];
+  class?: string;
+};
+
+const { label, options, class: className } = Astro.props;
+---
+
+{
+  options.length > 0 && (
+    <nav aria-label={label} class={cx('flex flex-col gap-12 lg:flex-row lg:items-center lg:gap-16', className)}>
+      <p class="text-caption opacity-60">{label}</p>
+
+      <ul class="flex flex-wrap gap-8">
+        {options.map((option) => (
+          <li>
+            <a
+              href={option.href}
+              data-page-in-place
+              aria-current={option.isActive ? 'true' : undefined}
+              aria-label={option.isActive ? `Remove filter: ${option.label}` : `Filter by ${option.label}`}
+              class="inline-flex rounded-full data-pending:animate-pulse motion-reduce:data-pending:animate-none"
+            >
+              <Chip label={option.label} selected={option.isActive} interactive />
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
+}

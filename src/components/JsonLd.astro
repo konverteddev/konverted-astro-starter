@@ -1,0 +1,14 @@
+---
+import { stegaClean } from "@sanity/client/stega";
+import type { JsonLd } from "~/features/site/seo/structured-data";
+
+type Props = { data: JsonLd };
+
+const { data } = Astro.props;
+
+// Draft mode encodes CMS strings with invisible stega characters; cleaning the whole graph here keeps every call site from having to remember.
+// Escaping `<` stops an authored "</script>" inside CMS copy from closing the tag early.
+const json = JSON.stringify(stegaClean(data)).replace(/</g, "\\u003c");
+---
+
+<script type="application/ld+json" is:inline set:html={json} />

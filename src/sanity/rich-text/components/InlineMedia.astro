@@ -1,0 +1,16 @@
+---
+import type { Props as PortableTextNodeProps } from "astro-portabletext/types";
+import SanityMedia from "../../media/SanityMedia.astro";
+import type { MediaValue } from "../../media/types";
+
+type Props = PortableTextNodeProps<{ _type: "inlineMediaField"; media?: MediaValue }>;
+
+const { node } = Astro.props;
+---
+
+<SanityMedia
+  media={node.media}
+  width={100}
+  class="inline-flex h-[1em] w-auto align-middle"
+  videoProps={{ autoPlay: true, loop: true, muted: true, noControls: true }}
+/>

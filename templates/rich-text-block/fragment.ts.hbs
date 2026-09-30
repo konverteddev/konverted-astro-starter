@@ -1,0 +1,10 @@
+export const {{pascalCase name}}Fragment = `
+_type == "{{camelCase name}}Block" => {
+  ...,
+}
+`
+
+export type {{pascalCase name}}FragmentResult = {
+  _type: '{{camelCase name}}Block'
+  // Extend with the block's projected fields.
+}

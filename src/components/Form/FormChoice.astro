@@ -1,0 +1,65 @@
+---
+import Icon from "~/components/Icon/Icon.astro";
+import { cx } from "~/features/style/utils";
+
+// One option row: the box or dial, and the text that turns the whole row into a hit area. Shared by
+// the standalone checkbox and by both group types, which own the label, the error and the name.
+type Props = {
+  type: "checkbox" | "radio";
+  name: string;
+  label: string;
+  id?: string;
+  value?: string;
+  checked?: boolean;
+  required?: boolean;
+  disabled?: boolean;
+  describedBy?: string;
+  invalid?: boolean;
+  class?: string;
+};
+
+const { type, name, label, id = name, value, checked, required, disabled, describedBy, invalid, class: className } = Astro.props;
+
+// Keyboard focus is painted globally in global.css, so a local outline would double it up.
+const CONTROL_CLASS =
+  "peer size-20 shrink-0 cursor-[inherit] appearance-none border border-white/20 bg-white/5 " +
+  "transition-colors duration-200 ease-out motion-reduce:transition-none " +
+  "checked:border-white checked:bg-white " +
+  "group-hover/choice:border-white/40 checked:group-hover/choice:border-white/80 " +
+  "checked:group-hover/choice:bg-white/80 " +
+  "disabled:border-white/10 disabled:bg-white/5 disabled:checked:bg-white/20 " +
+  "group-data-invalid/field:border-danger";
+
+// The mark rides on top of the control, so the whole box stays one native hit target.
+const MARK_CLASS = "pointer-events-none absolute text-black opacity-0 transition-opacity peer-checked:opacity-100";
+---
+
+<label
+  class={cx('group/choice flex w-fit items-center gap-12', disabled ? 'cursor-not-allowed' : 'cursor-pointer', className)}
+>
+  <span class="relative flex items-center justify-center">
+    <input
+      type={type}
+      id={id}
+      name={name}
+      value={value}
+      checked={checked}
+      required={required}
+      disabled={disabled}
+      aria-describedby={describedBy}
+      aria-invalid={invalid ? 'true' : undefined}
+      data-field-control
+      class={cx(CONTROL_CLASS, type === 'radio' ? 'rounded-full' : 'rounded-4')}
+    />
+
+    {
+      type === 'radio' ? (
+        <span class={cx(MARK_CLASS, 'size-6 rounded-full bg-current')} />
+      ) : (
+        <Icon name="check" class={cx(MARK_CLASS, 'size-12')} />
+      )
+    }
+  </span>
+
+  <span class={cx('text-body-10', disabled ? 'text-white/40' : 'text-white')}>{label}</span>
+</label>

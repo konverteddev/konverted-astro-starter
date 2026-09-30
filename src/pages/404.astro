@@ -1,0 +1,12 @@
+---
+import SiteError from "~/features/site/site-error/SiteError.astro";
+import Web from "~/layouts/Web.astro";
+import { loadSite, seo } from "../sanity/seo";
+
+const { data: site } = await loadSite(Astro);
+const seoProps = seo(site, { title: "Not Found", robots: "noindex,follow" });
+---
+
+<Web {...seoProps} noindex>
+  <SiteError />
+</Web>

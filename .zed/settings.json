@@ -1,0 +1,57 @@
+{
+  "context_servers": {
+    "Astro Docs": {
+      "url": "https://mcp.docs.astro.build/mcp"
+    }
+  },
+  "format_on_save": "on",
+  "lsp": {
+    "biome": {
+      "settings": {
+        "require_config_file": true
+      }
+    },
+    "vscode-css-language-server": {
+      "settings": {
+        "css": { "lint": { "unknownAtRules": "ignore" } },
+        "scss": { "lint": { "unknownAtRules": "ignore" } },
+        "less": { "lint": { "unknownAtRules": "ignore" } }
+      }
+    }
+  },
+  "languages": {
+    "TypeScript": {
+      "language_servers": ["...", "biome", "!eslint"],
+      "formatter": { "language_server": { "name": "biome" } },
+      "code_actions_on_format": {
+        "source.fixAll.biome": true
+      }
+    },
+    "TSX": {
+      "language_servers": ["...", "biome", "!eslint"],
+      "formatter": { "language_server": { "name": "biome" } },
+      "code_actions_on_format": {
+        "source.fixAll.biome": true
+      }
+    },
+    "JavaScript": {
+      "language_servers": ["...", "biome", "!eslint"],
+      "formatter": { "language_server": { "name": "biome" } },
+      "code_actions_on_format": {
+        "source.fixAll.biome": true
+      }
+    },
+    "JSON": {
+      "formatter": { "language_server": { "name": "biome" } }
+    },
+    "JSONC": {
+      "formatter": { "language_server": { "name": "biome" } }
+    },
+    "CSS": {
+      "formatter": { "language_server": { "name": "biome" } }
+    }
+  },
+  "file_types": {
+    "Markdown": ["mdc"]
+  }
+}
