@@ -39,7 +39,7 @@ const {
   class: className,
 } = Astro.props;
 
-const dialClass = "text-white/60 group-data-filled:text-white";
+const dialClass = "text-form-muted group-data-filled:text-form-ink";
 ---
 
 <FormField name={name} label={label} id={id} error={error} required={required} filled={Boolean(value)} class={className}>
@@ -57,7 +57,7 @@ const dialClass = "text-white/60 group-data-filled:text-white";
     <Icon name="chevron-down" class={cx('pointer-events-none absolute right-0 size-16', dialClass)} />
   </span>
 
-  <span aria-hidden="true" class="w-px shrink-0 self-stretch bg-white/20"></span>
+  <span aria-hidden="true" class="w-px shrink-0 self-stretch bg-form-line"></span>
 
   <input
     id={id}

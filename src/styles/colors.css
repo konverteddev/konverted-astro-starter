@@ -14,6 +14,13 @@
   /* Semantic, so deliberately not in the brand ramp below: content picking "danger" would be picking
      a meaning rather than a colour, and the value is free to change with the design system. */
   --color-danger: #ff4a3d;
+
+  /* The light form surface: ink for text, line for borders, muted for placeholders, track for an off switch, accent for the action. */
+  --color-form-ink: #1a1a5c;
+  --color-form-muted: #6b6f80;
+  --color-form-line: #d3d6dd;
+  --color-form-track: #e4e6ea;
+  --color-form-accent: #3572f0;
 }
 
 /* The brand ramp: the only tokens content is allowed to paint with, and the palette the Studio offers
@@ -30,6 +37,8 @@
 @theme static {
   --color-brand-black: #000;
   --color-brand-white: #fff;
+  --color-brand-white-10: rgb(255 255 255 / 0.1);
+  --color-brand-white-5: rgb(255 255 255 / 0.05);
   --color-brand-off-white: #f2f0ed;
   --color-brand-grey: #8a8a8a;
   --color-brand-accent: #ff9100;

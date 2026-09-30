@@ -20,13 +20,13 @@ type Props = {
 const { name, label, id = name, error, required, filled, floating, inline, multiline, class: className } = Astro.props;
 
 const BORDER_CLASS =
-  "border border-white/20 group-hover:border-white/40 group-focus-within:border-white " +
-  "has-[[data-field-control]:disabled]:border-white/10 group-data-invalid:border-danger";
+  "border border-form-line group-hover:border-form-muted group-focus-within:border-form-ink " +
+  "has-[[data-field-control]:disabled]:border-form-line/60 group-data-invalid:border-danger";
 
 const boxClass = cx(
-  "flex w-full rounded-4 bg-white/5 transition-colors duration-200 ease-out motion-reduce:transition-none",
+  "flex w-full rounded-8 bg-white transition-colors duration-200 ease-out motion-reduce:transition-none",
   inline && "h-52 items-center gap-16 py-4 pr-4 pl-16",
-  !inline && !multiline && cx("h-44 items-center gap-8 px-16", BORDER_CLASS),
+  !inline && !multiline && cx("h-56 items-center gap-8 px-16", BORDER_CLASS),
   multiline && cx("items-start gap-8 px-16 py-12", BORDER_CLASS)
 );
 
@@ -51,7 +51,7 @@ const chipClass = cx(FIELD_BORDER_CHIP_CLASS, "left-12");
         ? 'sr-only'
         : [
             chipClass,
-            '-top-5 translate-y-4 text-white/60 opacity-0 transition duration-200 ease-out motion-reduce:transition-none',
+            '-top-5 translate-y-4 text-form-muted opacity-0 transition duration-200 ease-out motion-reduce:transition-none',
             'group-focus-within:translate-y-0 group-focus-within:opacity-100',
             'group-data-filled:translate-y-0 group-data-filled:opacity-100',
             floating && 'translate-y-0 opacity-100',

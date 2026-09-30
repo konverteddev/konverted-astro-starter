@@ -1,7 +1,6 @@
 import { defineField, defineType } from "sanity";
 
-// Written only by the contact form endpoint; the fields mirror what that form asks (one of every
-// control type, as the worked form example). Editors read submissions here, never author them.
+// Written only by the contact form endpoint; the fields mirror what that form asks. Editors read submissions here, never author them.
 export const contactFormSubmission = defineType({
   __experimental_formPreviewTitle: false,
   name: "contactFormSubmission",
@@ -27,32 +26,25 @@ export const contactFormSubmission = defineType({
       description: "Dial code and number, as submitted.",
     }),
     defineField({
-      name: "topic",
+      name: "company",
       type: "string",
     }),
     defineField({
-      name: "startDate",
-      title: "Preferred start date",
+      name: "companySize",
       type: "string",
     }),
     defineField({
-      name: "budget",
-      type: "string",
-    }),
-    defineField({
-      name: "services",
-      type: "array",
-      of: [{ type: "string" }],
-    }),
-    defineField({
-      name: "message",
-      type: "text",
-      rows: 5,
-    }),
-    defineField({
-      name: "consent",
+      name: "sellsOnMarketplaces",
       type: "boolean",
-      description: "Whether the privacy policy box was ticked at submit.",
+    }),
+    defineField({
+      name: "offersDigitalServices",
+      type: "boolean",
+    }),
+    defineField({
+      name: "marketingConsent",
+      type: "boolean",
+      description: "Whether the box to receive other communications was ticked at submit.",
     }),
   ],
   preview: {

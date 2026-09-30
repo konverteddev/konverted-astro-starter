@@ -536,12 +536,11 @@ export type ContactFormSubmission = {
   lastName?: string;
   email?: string;
   phone?: string;
-  topic?: string;
-  startDate?: string;
-  budget?: string;
-  services?: Array<string>;
-  message?: string;
-  consent?: boolean;
+  company?: string;
+  companySize?: string;
+  sellsOnMarketplaces?: boolean;
+  offersDigitalServices?: boolean;
+  marketingConsent?: boolean;
 };
 
 export type Redirect = {

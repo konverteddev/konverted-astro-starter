@@ -3,8 +3,8 @@
 Every public form on the site is the same three pieces: one definition, one custom element, one
 endpoint. The definition is shared by all three, so a rule written once shows up in the markup, in
 the browser and on the server without being restated anywhere. The contact form section
-(`src/features/page-builder/sections/ContactFormSection/`) is the worked example: it renders one
-field of every control type against this exact plumbing.
+(`src/features/page-builder/sections/ContactFormSection/`) is the worked example: a light-surface
+"book a demo" form on this exact plumbing.
 
 ## One definition per form
 
@@ -51,7 +51,7 @@ Reading a group with `get` would submit only its first checked box, so the infer
 table test in `validate.test.ts`; extend it if you add a schema shape it does not already list.
 
 An unselected radio group reads as `""`, not as `undefined`, so an optional one must say so in string
-terms: `z.enum([...]).or(z.literal(""))` (the contact form's `budget` field). Plain `.optional()`
+terms: `z.enum([...]).or(z.literal(""))` (a radio group's optional answer); a switch or checkbox that may stay off is `z.literal("on").or(z.literal(""))`. Plain `.optional()`
 would keep rejecting the blank, and the derived asterisk would (correctly) call the field required.
 
 ```astro
@@ -67,7 +67,7 @@ placeholder, which has to say the same thing.
 
 ## The controls
 
-`src/components/Form/` holds them; the contact form section renders every one of them live.
+`src/components/Form/` holds them; the contact form section renders most of them; the rest are built the same way.
 
 | Component          | For                                                                    |
 | ------------------ | ---------------------------------------------------------------------- |
@@ -77,6 +77,7 @@ placeholder, which has to say the same thing.
 | `FormDate`         | a native date input                                                     |
 | `FormPhone`        | a dial code and a number, submitted as two fields                       |
 | `FormCheckbox`     | a single checkbox answering for itself (consent, a preference)          |
+| `FormToggle`       | a yes/no switch answering for itself, as a checkbox underneath          |
 | `FormChoiceGroup`  | `radio` for one answer or `checkbox` for any number                     |
 
 `FormField` is the shared shell for the boxed fields; `FormChoice` is the shared option row behind the

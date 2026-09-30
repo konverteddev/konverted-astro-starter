@@ -26,7 +26,7 @@ function readBrandTokens() {
   const css = readFileSync(COLORS_CSS, "utf8");
 
   // Defaults, not assertions: an absent group would mean the regex changed, and the empty string fails below.
-  return [...css.matchAll(/--color-(brand-[a-z-]+):\s*([^;]+);/g)].map(([, name = "", swatch = ""]) => ({
+  return [...css.matchAll(/--color-(brand-[a-z0-9-]+):\s*([^;]+);/g)].map(([, name = "", swatch = ""]) => ({
     name,
     swatch: swatch.trim(),
   }));

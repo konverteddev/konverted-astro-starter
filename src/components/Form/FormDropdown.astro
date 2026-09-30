@@ -35,7 +35,7 @@ const { name, label, options, id = name, value, error, required, disabled, class
     data-field-control
     class={cx(
       FIELD_CONTROL_CLASS,
-      'absolute inset-0 h-full appearance-none rounded-4 px-16 pr-40 text-white/60 group-data-filled:text-white'
+      'absolute inset-0 h-full appearance-none rounded-8 px-16 pr-40 text-form-muted group-data-filled:text-form-ink'
     )}
   >
     <option value="" disabled selected={!value}>{fieldLabel(label, required)}</option>

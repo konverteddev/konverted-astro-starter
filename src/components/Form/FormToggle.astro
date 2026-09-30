@@ -1,0 +1,57 @@
+---
+import { cx } from "~/features/style/utils";
+import { fieldLabel } from "./label";
+import { FIELD_CHIP_CLASS } from "./styles";
+
+// A yes/no switch that answers for itself. It is a checkbox underneath, so it submits `value` only when on,
+// and the schema reads that string or an empty one.
+type Props = {
+  name: string;
+  label: string;
+  id?: string;
+  value?: string;
+  checked?: boolean;
+  error?: string;
+  required?: boolean;
+  disabled?: boolean;
+  class?: string;
+};
+
+const { name, label, id = name, value = "on", checked, error, required, disabled, class: className } = Astro.props;
+
+const TRACK_CLASS =
+  "relative h-24 w-40 shrink-0 rounded-full border border-form-line bg-form-track transition-colors duration-200 ease-out " +
+  "motion-reduce:transition-none " +
+  "after:absolute after:top-2 after:left-2 after:size-18 after:rounded-full after:border after:border-form-line after:bg-white " +
+  "after:transition-transform after:duration-200 after:ease-out motion-reduce:after:transition-none " +
+  "peer-checked:border-form-accent peer-checked:bg-form-accent peer-checked:after:translate-x-16 peer-checked:after:border-white " +
+  "peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-form-ink " +
+  "peer-disabled:opacity-50 group-data-invalid/field:border-danger";
+---
+
+<div data-field data-invalid={error ? '' : undefined} class={cx('group/field flex flex-col gap-8 border-b border-form-line pb-16', className)}>
+  <label class={cx('flex w-full items-center gap-24', disabled ? 'cursor-not-allowed' : 'cursor-pointer')}>
+    <input
+      type="checkbox"
+      role="switch"
+      id={id}
+      name={name}
+      value={value}
+      checked={checked}
+      required={required}
+      disabled={disabled}
+      aria-describedby={`${id}-error`}
+      aria-invalid={error ? 'true' : undefined}
+      data-field-control
+      class="peer sr-only"
+    />
+
+    <span aria-hidden="true" class={TRACK_CLASS}></span>
+
+    <span class="text-body-10 font-semibold text-form-ink">{fieldLabel(label, required)}</span>
+  </label>
+
+  <p id={`${id}-error`} data-field-error={name} aria-live="polite" class={cx(FIELD_CHIP_CLASS, 'text-danger empty:hidden')}>
+    {error}
+  </p>
+</div>

@@ -28,14 +28,25 @@ function escapeHtml(value: string) {
 }
 
 /** What the endpoint stores and mails: the parsed values, with the two phone fields joined back up. */
-function toSubmission({ phoneDialCode, phone, consent, ...values }: ContactFormValues) {
+function toSubmission({
+  phoneDialCode,
+  phone,
+  sellsOnMarketplaces,
+  offersDigitalServices,
+  marketingConsent,
+  ...values
+}: ContactFormValues) {
   return {
     ...values,
     phone: phone ? `${phoneDialCode} ${phone}` : "",
-    // The value is the checkbox's fixed "on"; what matters for the record is that it was given.
-    consent: consent === "on",
+    // The value is the control's fixed "on"; what matters for the record is that it was given.
+    sellsOnMarketplaces: sellsOnMarketplaces === "on",
+    offersDigitalServices: offersDigitalServices === "on",
+    marketingConsent: marketingConsent === "on",
   };
 }
+
+const yesNo = (value: boolean) => (value ? "Yes" : "No");
 
 type Submission = ReturnType<typeof toSubmission>;
 
@@ -48,10 +59,11 @@ async function sendNotification(recipients: string[], subject: string, submissio
     ["Name", `${submission.firstName} ${submission.lastName}`],
     ["Email", submission.email],
     ["Phone", submission.phone],
-    ["Topic", submission.topic],
-    ["Preferred start date", submission.startDate],
-    ["Budget", submission.budget],
-    ["Services", submission.services.join(", ")],
+    ["Company", submission.company],
+    ["Company size", submission.companySize],
+    ["Sells goods on marketplaces", yesNo(submission.sellsOnMarketplaces)],
+    ["Offers digital services", yesNo(submission.offersDigitalServices)],
+    ["Agreed to other communications", yesNo(submission.marketingConsent)],
   ];
 
   const lines = rows
@@ -67,9 +79,7 @@ async function sendNotification(recipients: string[], subject: string, submissio
     subject: escapeHtml(subject),
     html: `
       <p>
-        ${lines}<br />
-        <strong>Message</strong>:<br />
-        ${escapeHtml(submission.message).replace(/\n/g, "<br />")}
+        ${lines}
       </p>
     `,
   });

@@ -1,12 +1,11 @@
 ---
 import { stegaClean } from "@sanity/client/stega";
 import FormCheckbox from "~/components/Form/FormCheckbox.astro";
-import FormChoiceGroup from "~/components/Form/FormChoiceGroup.astro";
-import FormDate from "~/components/Form/FormDate.astro";
 import FormDropdown from "~/components/Form/FormDropdown.astro";
 import FormInput from "~/components/Form/FormInput.astro";
 import FormPhone from "~/components/Form/FormPhone.astro";
-import FormTextarea from "~/components/Form/FormTextarea.astro";
+import FormToggle from "~/components/Form/FormToggle.astro";
+import Icon from "~/components/Icon/Icon.astro";
 import SubmitButton from "~/components/SubmitButton.astro";
 import { ContactFormSectionQ } from "~/features/page-builder/queries";
 import SectionFrame from "~/features/page-builder/SectionFrame.astro";
@@ -15,7 +14,7 @@ import type { ContactFormSectionQResult } from "~/sanity/types";
 import { getDraftModeProps } from "../../../../sanity/lib/draft-mode";
 import { loadQuery } from "../../../../sanity/lib/load-query";
 import SanityRichText from "../../../../sanity/rich-text/SanityRichText.astro";
-import { CONTACT_BUDGETS, CONTACT_SERVICES, CONTACT_TOPICS, contactForm } from "./validate-contact-form";
+import { CONTACT_COMPANY_SIZES, contactForm } from "./validate-contact-form";
 
 type Props = SectionProps;
 
@@ -41,7 +40,7 @@ const endpoint = "/api/contact-form";
       settings={section.settings}
       id={stegaClean(section.settings?.hash) ?? undefined}
       data-page-builder-section="contactFormSection"
-      class="flex flex-col gap-32"
+      class="flex flex-col gap-32 rounded-16 bg-white p-32 text-form-ink"
     >
       {headline && <h2 class="text-headline-10 text-balance whitespace-pre-line">{headline}</h2>}
       <SanityRichText animated value={text} class="text-body-10" />
@@ -56,24 +55,35 @@ const endpoint = "/api/contact-form";
             class="pointer-events-none absolute -left-[9999px] -z-1 h-px w-px overflow-hidden opacity-0"
           />
 
-          <div class="grid gap-24 md:grid-cols-2">
-            <FormInput {...field('firstName')} label="First Name" autocomplete="given-name" />
-            <FormInput {...field('lastName')} label="Last Name" autocomplete="family-name" />
+          <div class="grid gap-16 md:grid-cols-2">
+            <FormInput {...field('firstName')} label="First name" autocomplete="given-name" />
+            <FormInput {...field('lastName')} label="Last name" autocomplete="family-name" />
             <FormInput {...field('email')} label="Email" type="email" autocomplete="email" />
             <FormPhone {...field('phone')} label="Phone" />
-            <FormDropdown {...field('topic')} label="Topic" options={[...CONTACT_TOPICS]} />
-            <FormDate {...field('startDate')} label="Preferred start date" />
+            <FormInput {...field('company')} label="Company name" autocomplete="organization" />
+            <FormDropdown {...field('companySize')} label="Select company size" options={[...CONTACT_COMPANY_SIZES]} />
           </div>
 
-          <FormChoiceGroup {...field('budget')} type="radio" label="Budget" options={[...CONTACT_BUDGETS]} />
+          <div class="flex flex-col gap-16">
+            <FormToggle {...field('sellsOnMarketplaces')} label="Are you selling goods on marketplaces?" />
+            <FormToggle {...field('offersDigitalServices')} label="Are you offering digital services?" />
+            <FormCheckbox {...field('marketingConsent')} label="I agree to receive other communications from us." />
+          </div>
 
-          <FormChoiceGroup {...field('services')} type="checkbox" label="Services" options={[...CONTACT_SERVICES]} />
+          <p class="text-body-10 text-form-ink">
+            *By clicking Book a demo below, you consent to allow us to store and process the personal information.
+          </p>
 
-          <FormTextarea {...field('message')} label="Message" />
-
-          <FormCheckbox {...field('consent')} label="I agree to the processing of my data as described in the privacy policy" />
-
-          <SubmitButton label="Send Message" pendingLabel="Sending" doneLabel="Message sent" class="w-full" />
+          <SubmitButton
+            label="Book a demo"
+            pendingLabel="Sending"
+            doneLabel="Request sent"
+            class="h-56 w-full grid-cols-[1fr_auto] rounded-8 bg-form-accent px-0 font-sans text-body-20 font-semibold text-white normal-case hover:bg-form-accent/90"
+          >
+            <span slot="right-icon" class="flex h-full items-center self-stretch border-l border-white/40 px-24">
+              <Icon name="arrow-right" class="size-20" />
+            </span>
+          </SubmitButton>
 
           <p data-form-message class="text-caption empty:hidden" aria-live="polite" />
         </form>

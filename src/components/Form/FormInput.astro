@@ -52,7 +52,7 @@ const {
     aria-describedby={`${id}-error`}
     aria-invalid={error ? 'true' : undefined}
     data-field-control
-    class={cx(FIELD_CONTROL_CLASS, submit && 'focus:placeholder:text-white/60')}
+    class={cx(FIELD_CONTROL_CLASS, submit && 'focus:placeholder:text-form-muted')}
   />
 
   {submit && <Button type="submit" disabled={disabled}>{submit}</Button>}

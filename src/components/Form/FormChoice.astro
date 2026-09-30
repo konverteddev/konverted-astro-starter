@@ -22,16 +22,15 @@ const { type, name, label, id = name, value, checked, required, disabled, descri
 
 // Keyboard focus is painted globally in global.css, so a local outline would double it up.
 const CONTROL_CLASS =
-  "peer size-20 shrink-0 cursor-[inherit] appearance-none border border-white/20 bg-white/5 " +
+  "peer size-20 shrink-0 cursor-[inherit] appearance-none border border-form-ink bg-white " +
   "transition-colors duration-200 ease-out motion-reduce:transition-none " +
-  "checked:border-white checked:bg-white " +
-  "group-hover/choice:border-white/40 checked:group-hover/choice:border-white/80 " +
-  "checked:group-hover/choice:bg-white/80 " +
-  "disabled:border-white/10 disabled:bg-white/5 disabled:checked:bg-white/20 " +
+  "checked:border-form-ink checked:bg-form-ink " +
+  "group-hover/choice:border-form-accent checked:group-hover/choice:bg-form-accent " +
+  "disabled:border-form-line disabled:bg-white disabled:checked:bg-form-line " +
   "group-data-invalid/field:border-danger";
 
 // The mark rides on top of the control, so the whole box stays one native hit target.
-const MARK_CLASS = "pointer-events-none absolute text-black opacity-0 transition-opacity peer-checked:opacity-100";
+const MARK_CLASS = "pointer-events-none absolute text-white opacity-0 transition-opacity peer-checked:opacity-100";
 ---
 
 <label
@@ -61,5 +60,5 @@ const MARK_CLASS = "pointer-events-none absolute text-black opacity-0 transition
     }
   </span>
 
-  <span class={cx('text-body-10', disabled ? 'text-white/40' : 'text-white')}>{label}</span>
+  <span class={cx('text-body-10 font-semibold', disabled ? 'text-form-muted/60' : 'text-form-ink')}>{label}</span>
 </label>
